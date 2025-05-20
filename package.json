@@ -1,6 +1,6 @@
 {
   "name": "new_app",
-  "homepage": "https://github.com/loganrileymccarthy/backplot"
+  "homepage": "https://loganrileymccarthy.github.io/backplot",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -19,6 +19,7 @@
     "@mui/lab": "^7.0.0-beta.11",
     "@mui/material": "^7.0.2",
     "expr-eval": "^2.0.2",
+    "gh-pages": "^6.3.0",
     "mathjs": "^14.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
