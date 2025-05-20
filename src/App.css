@@ -1,0 +1,27 @@
+textarea {
+    height: 100%;
+    width: 100%;
+
+    resize: none;
+    box-sizing: border-box;
+    
+    white-space: pre;    
+    overflow-wrap: normal;
+    /*overflow-x: scroll;*/
+
+    font-family: monospace;
+    font-size: 14px;
+    background-color: rgb(50, 54, 73);
+    color: lightgrey;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 0, 255, 0.3);
+}
+
+canvas {
+    background-color: lightslategray;
+}
