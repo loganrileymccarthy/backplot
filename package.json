@@ -1,6 +1,6 @@
 {
   "name": "new_app",
-  "homepage": "https://github.com/loganrileymccarthy/backplotter"
+  "homepage": "https://github.com/loganrileymccarthy/backplot"
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
