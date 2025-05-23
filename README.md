@@ -1,6 +1,10 @@
 # Lane4 Backplotter
-May 2025
-Now a react js app running in browser!
+May 2025  
+Now a react js app running in browser!  
+
+[Click here to launch site](https://loganrileymccarthy.github.io/backplot)  
+
+Or, to run locally:  
 
 + Clone this repository (git clone http://github.com/loganrileymccarthy/backplot)
 + Ensure node is installed on the computer (https://nodejs.org/en)
