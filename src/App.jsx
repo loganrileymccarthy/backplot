@@ -4,8 +4,8 @@ import 'mathjs';
 
 import './App.css';
 import Title from './components/Title';
-//import InputForm from './components/InputForm';
-//import OutputForm from './components/OutputForm';
+import OutputBox from './components/OutputBox';
+import InputBox from './components/InputBox';
 
 
 function App() {
@@ -19,8 +19,9 @@ function App() {
   const [output3, setOutput3] = useState();
   const [lineItems1, setLineItems1] = useState([{}]);
   const [lineItems2, setLineItems2] = useState([{}]);
-  const [currentLine1, setCurrentLine1] = useState();
-  const [currentLine2, setCurrentLine2] = useState();
+  const [currentWindow, setCurrentWindow] = useState(0);
+  const [currentLine1, setCurrentLine1] = useState(1);
+  const [currentLine2, setCurrentLine2] = useState(1);
 
   //~~~ MAIN OUTPUT FUNCTION ~~~//
   //set $ = which section to output
@@ -322,7 +323,8 @@ function App() {
 
     var n814 = 0, n815 = 0, n816 = 0, n817 = 0, n818 = 0, n819 = 0, n820 = 0, n821 = 0, n822 = 0, n823 = 0, n824 = 0, n893 = 0, n990 = 0, n991 = 0, n992 = 0;
     var n521 = 521, n533 = 533, n555 = 555, n560 = 560;
-    
+    var varArr = new Array(999).fill(null);
+
     var activeT = '/';
     var activeMA='/', activeMB='/', activeMC='/', activeMD='/', activeME='/';
     var activeGA='/', activeGB='/', activeGC='/', activeGD='/', activeGE='/', activeGF='/', activeGG='/', activeGH='/', activeGI='/', activeGJ='/', activeGK='/', activeGL='/', activeGM='/';
@@ -389,23 +391,8 @@ function App() {
       object.coordX = currentX+currentU;  //coords
       object.coordY = currentY+currentV;
       object.coordZ = currentZ+currentW;
-      //object.coordU = currentU;
-      //object.coordV = currentV;
-      //object.coordW = currentW;
 
       object.tool = activeT;
-
-      switch ($) {
-      case 1: //$1
-        setLineItems1([...lineItems1, object]);
-        break;
-      case 2: //$2
-        setLineItems2([...lineItems2, object]);
-        break;
-      default:
-        setLineItems1([...lineItems1, object]);
-        break;
-      }
 
       output += object.id.toString().padStart(4, '0') + ' '; //build string to output
       output += "[X " + object.coordX.toFixed(4) + ' ';
@@ -438,25 +425,62 @@ function App() {
       output += '\n';
     });
 
-    if (s == '') {output = ''};   //handles blank input
+    switch ($) {
+      case 1: //$1
+        setLineItems1(o);
+        break;
+      case 2: //$2
+        setLineItems2(o);
+        break;
+      default:
+        setLineItems1(o);
+        break;
+    }
 
+    if (s == '') {output = ''};   //handles blank input
+    output = output.slice(0,-1);  //deletes empty line at end
     return output;
   }
   
   //~~~ EVENT HANDLING ~~~//
 
+  const handleInputInteraction = (event) => {
+    setInputText(event.target.value)
+  }
   const handleUpload = () => {
     setOutput1(outputFunction(inputText, 1));
     setOutput2(outputFunction(inputText, 2));
     setOutput3(outputFunction(inputText, 0));
   }
-  //for now, currentLine will just show active output box.
-  //I can't figure out how to get the selectionStart.
-  const handleMouseUp1 = () => {
-    setCurrentLine1("$1");
+  const handleOutputInteraction1 = (event) => {
+    setCurrentWindow(1);
+    setCurrentLine1(event.target.value.substr(0, event.target.selectionStart).split("\n").length);
+    
+    /*
+    //set up canvas and coords
+    const canvas = document.getElementById("plot");
+    const ctx = canvas.getContext("2d");
+    const prevX = (canvas.width / 2) + (lineItems1[currentLine1-1].coordX );
+    const prevY = (canvas.height / 2) + (lineItems1[currentLine1-1].coordY );
+    const newX = (canvas.width / 2) + (lineItems1[currentLine1].coordX );
+    const newY = (canvas.height / 2) + (lineItems1[currentLine1].coordY );
+
+    
+    //start new path
+    ctx.clearRect(0,0,canvas.width, canvas.height)
+    ctx.beginPath();
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = 'red';
+    ctx.moveTo(prevX, prevY);
+    ctx.lineTo(newX, newY);
+
+    //draw path
+    ctx.stroke();
+    */
   }
-  const handleMouseUp2 = () => {
-    setCurrentLine1("$2");
+  const handleOutputInteraction2 = (event) => {
+    setCurrentWindow(2);
+    setCurrentLine2(event.target.value.substr(0, event.target.selectionStart).split("\n").length);
   }
 
   //~~~ BUILD PAGE ~~~//
@@ -464,7 +488,6 @@ function App() {
   return (
     <div className="App">
       <>
-
       <Container maxWidth={false} sx={{bgcolor: 'lightsteel', height: '5vh'}}>
         <Box display="flex" flexDirection={'row'} justifyContent={'center'}>
           <Title/>
@@ -473,14 +496,10 @@ function App() {
       
       <Container maxWidth={false} sx={{ bgcolor: 'lightsteel', height: '90vh'}}>
         <Box display="flex" flexDirection={'row'} justifyContent={'center'} height={'100%'}>
-          
           <Box display="flex" flexDirection={'column'} height={'100%'} width={'25%'}>
-            <textarea
-              name="inputBox"
-              placeholder="enter code"
-              value = {inputText}
-              onChange = {(e) => {setInputText(e.target.value)}}
-              spellCheck={false}
+            <InputBox
+              text = {inputText}
+              handleChange = {handleInputInteraction}
             />
             <Button 
               variant='contained' 
@@ -489,44 +508,75 @@ function App() {
               UPLOAD
             </Button>
           </Box>
-
           <Box display="flex" flexDirection={'column'} height={'100%'} width={'100%'}>
             <canvas
-              name="plot"
+              id="plot"
             />
             <Box display="flex" flexDirection={'row'} height={'30%'} width={'100%'}>
-              <textarea
-                name="outputBox1"
-                placeholder="$1"
-                value={output1}
-                spellCheck={false}
-                onMouseUp={handleMouseUp1}
-                //onKeyUp={this.onMouseUp}
+              <OutputBox
+                $={1}
+                text={output1}
+                handleMouseClick={handleOutputInteraction1}
+                handleKeyPress={handleOutputInteraction1}
               />
-              <textarea
-                name="outputBox2"
-                placeholder="$2"
-                value={output2}
-                spellCheck={false}
-                onMouseUp={handleMouseUp2}
-                //onKeyUp={this.onMouseUp}
+              <OutputBox
+                $={2}
+                text={output2}
+                handleMouseClick={handleOutputInteraction2}
+                handleKeyPress={handleOutputInteraction2}
               />
             </Box>
           </Box>
-
         </Box>
-
-        <div class="cornerChip1">
+        <div className="cornerChip1">
           <Chip 
-            label={currentLine1}
+            label={"X1: " + lineItems1[currentLine1-1].coordX}
             size='small' 
             variant='filled'
             color='secondary'
           />
         </div>
-        
+        <div className="cornerChip2">
+          <Chip 
+            label={"Y1: " + lineItems1[currentLine1-1].coordY}
+            size='small' 
+            variant='filled'
+            color='secondary'
+          />
+        </div>
+        <div className="cornerChip3">
+          <Chip 
+            label={"Z1: " + lineItems1[currentLine1-1].coordZ}
+            size='small' 
+            variant='filled'
+            color='secondary'
+          />
+        </div>
+        <div className="cornerChip4">
+          <Chip 
+            label={"X2: " + lineItems2[currentLine2-1].coordX}
+            size='small' 
+            variant='filled'
+            color='info'
+          />
+        </div>
+        <div className="cornerChip5">
+          <Chip 
+            label={"Y2: " + lineItems2[currentLine2-1].coordY}
+            size='small' 
+            variant='filled'
+            color='info'
+          />
+        </div>
+        <div className="cornerChip6">
+          <Chip 
+            label={"Z2: " + lineItems2[currentLine2-1].coordZ}
+            size='small' 
+            variant='filled'
+            color='info'
+          />
+        </div>
       </Container>
-
       </>
     </div>
   );
