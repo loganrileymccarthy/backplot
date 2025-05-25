@@ -1,33 +1,40 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {Box, Container, Button, Chip} from "@mui/material";
-import 'mathjs';
+import { create, all } from 'mathjs';
 
 import './App.css';
 import Title from './components/Title';
 import OutputBox from './components/OutputBox';
 import InputBox from './components/InputBox';
 
-
 function App() {
   
-  //~~~ USESTATE ~~~//
+  //~~~ INITIALIZE USESTATE ~~~//
   //for things that should change and cause the page to re-render
 
   const [inputText, setInputText] = useState();
   const [output1, setOutput1] = useState();
   const [output2, setOutput2] = useState();
   const [output3, setOutput3] = useState();
-  const [lineItems1, setLineItems1] = useState([{}]);
-  const [lineItems2, setLineItems2] = useState([{}]);
+  const [lineItems1, setLineItems1] = useState([{x1:0, y1:0, z1:0, x2:0, y2:0, z2:0}]);
+  const [lineItems2, setLineItems2] = useState([{x1:0, y1:0, z1:0, x2:0, y2:0, z2:0}]);
   const [currentWindow, setCurrentWindow] = useState(0);
   const [currentLine1, setCurrentLine1] = useState(1);
   const [currentLine2, setCurrentLine2] = useState(1);
+
+  //~~~ INITIALIZE MATHJS INSTANCE ~~~//
+  //for evaluating expressions
+
+  const math = create(all,  {});
 
   //~~~ MAIN OUTPUT FUNCTION ~~~//
   //set $ = which section to output
   //no $ = whole code
 
   function outputFunction (s, $) {
+
+    //CHILD FUNCTIONS
+    //to be called later
 
     function getNumberAfterChar(str, char) {    //used multiple places
       const index = str.indexOf(char);
@@ -53,6 +60,14 @@ function App() {
       }
       return n;
     }
+    function getCharAfterSubstr(str, substr) {
+      const index = str.indexOf(substr);
+      if (index !== -1 && index + substr.length < str.length) {
+        return str.charAt(index + substr.length);
+      } else {
+        return ''; 
+      }
+    }
     function getCharsUntilLetter(str) {         //for gathering expressions
       let substr = '';
       for (let i = 0; i < str.length; i++) {
@@ -73,13 +88,12 @@ function App() {
       return total;
     }
     function strBetweenChars(str, char1, char2) {
-    const index1 = str.indexOf(char1);
-    const index2 = str.indexOf(char2);
-
-    if (index1 !== -1 && index2 !== -1 && index1 < index2) {
-      return str.substring(index1 + 1, index2);
-    } else {
-      return "";
+      const index1 = str.indexOf(char1);
+      const index2 = str.indexOf(char2);
+        if (index1 !== -1 && index2 !== -1 && index1 < index2) {
+          return str.substring(index1 + 1, index2);
+        } else {
+          return "";
     }
     }
     function getVars(str) {   //initial scan whole text for $0
@@ -87,8 +101,13 @@ function App() {
       if (index === -1) {
         return '';    //$0 not found
       }
-      const vars = str.substring(index);
-      //s = str.replace(vars, "");
+      let vars = str.substring(index);
+      while (vars.includes('#')) {
+        let varNum = getNumberAfterChar(vars, '#');
+        let varVal = getFloatAfterChar(vars.substr(vars.indexOf('#')), '=')
+        varArr[varNum] = varVal / 10000;
+        vars = vars.replace('#', '');
+      }
       return vars;
     }
     function clean(line) {    //better to clean line by line instead of all at once
@@ -99,51 +118,33 @@ function App() {
       line = line.toUpperCase();                  //capitalize
       
       //ignoring these
-      if (line.includes("IF")) {
-        line = '';
-      }
-      if (line.includes("M350")) {
-        line = '';
-      }
+      if (line.includes("IF")) line = '';
+      if (line.includes("WHILE")) line = '';
+      if (line.includes("M350")) line = '';
 
-      //replace variables
-      line = line.replaceAll("#814", (getNumberAfterChar(endVars, "#814=") / 10000));   //variables from end block
-      line = line.replaceAll("#815", (getNumberAfterChar(endVars, "#815=") / 10000));
-      line = line.replaceAll("#816", (getNumberAfterChar(endVars, "#816=") / 10000));
-      line = line.replaceAll("#817", (getNumberAfterChar(endVars, "#817=") / 10000));
-      line = line.replaceAll("#818", (getNumberAfterChar(endVars, "#818=") / 10000));
-      line = line.replaceAll("#819", (getNumberAfterChar(endVars, "#819=") / 10000));
-      line = line.replaceAll("#820", (getNumberAfterChar(endVars, "#820=") / 10000));
-      line = line.replaceAll("#821", (getNumberAfterChar(endVars, "#821=") / 10000));
-      line = line.replaceAll("#822", (getNumberAfterChar(endVars, "#822=") / 10000));
-      line = line.replaceAll("#823", (getNumberAfterChar(endVars, "#823=") / 10000));
-      line = line.replaceAll("#824", (getNumberAfterChar(endVars, "#824=") / 10000));
-      line = line.replaceAll("#893", (getNumberAfterChar(endVars, "#893=") / 10000));
-      line = line.replaceAll("#990", (getNumberAfterChar(endVars, "#990=") / 10000));
-      line = line.replaceAll("#991", (getNumberAfterChar(endVars, "#991=") / 10000));
-      line = line.replaceAll("#992", (getNumberAfterChar(endVars, "#992=") / 10000));
+      //handle all #
+      while (line.includes('#')) {
+        let varNum = getNumberAfterChar(line, '#');
+        let varText = '#' + varNum.toString();
+        
+        //declaration
+        if (getCharAfterSubstr(line, varText) == '=') {
+          
+          //declared equal to another variable
+          if (getCharAfterSubstr(line, varText + '=') == '#') {
+            let var2Num = getNumberAfterChar(line, "=#");
+            let var2Text = '#' + var2Num.toString();
+            line = line.replace(var2Text, varArr[var2Num].toString());
+          }
+          
+          let varVal = getFloatAfterChar(line, varText+'=');
+          varArr[varNum] = varVal;
+          line = line.replace(varText + '=', varNum.toString() + "::");
+        }
 
-      while (line.includes("#521=")) {            //new variable declarations
-        n521 = getNumberAfterChar(line, "#521=");
-        line = line.replace("#521=", "_");
+        //regular variable occurrence
+        line = line.replace(varText, varArr[varNum].toString());
       }
-      while (line.includes("#533=")) {            //new variable declarations
-        n533 = getNumberAfterChar(line, "#533=");
-        line = line.replace("#533=", "_");
-      }
-      while (line.includes("#555=")) {
-        n555 = getNumberAfterChar(line, "#555=");
-        line = line.replace("#555=", "_");
-      }
-      while (line.includes("#560=")) {
-        n560 = getNumberAfterChar(line, "#560=");
-        line = line.replace("#560=", "_");
-      }
-      
-      line = line.replaceAll("#521", n521);       //500 variables
-      line = line.replaceAll("#533", n533);
-      line = line.replaceAll("#555", n555);
-      line = line.replaceAll("#560", n560);
 
       return line;
     }
@@ -202,7 +203,14 @@ function App() {
     function getCoord (line, char) {
       if (line.includes(char)) {
         let expr = getCharsUntilLetter(line.substring(line.indexOf(char)+1));
-        let res = addBits(expr);
+        expr = expr.replace(',' , '');
+        expr = expr.replace('[' , '(');
+        expr = expr.replace(']' , ')');
+        console.log(expr);
+        
+        let res = parseFloat(math.evaluate(expr));
+        console.log(res);
+
         return (res);
       }
       else return 99999;
@@ -212,36 +220,17 @@ function App() {
       var arr = [];
       
       //coords
-      if (line.includes('X')) {
-        currentX = getCoord(line, 'X');
-        //arr.push('X' + res);
-      }
-      if (line.includes('Y')) {
-        currentY = getCoord(line, 'Y');
-        //arr.push('Y' + res);
-      }
-      if (line.includes('Z')) {
-        currentZ = getCoord(line, 'Z');
-        //arr.push('Z' + res);
-      }
-      if (line.includes('U')) {
-        currentU = getCoord(line, 'U');
-        //arr.push('U' + res);
-      } else currentU = 0;
-      if (line.includes('V')) {
-        currentV = getCoord(line, 'V');
-        //arr.push('V' + res);
-      } else currentV = 0;
-      if (line.includes('W')) {
-        currentW = getCoord(line, 'W');
-        //arr.push('W' + res);
-      } else currentW = 0;
+      if (line.includes('X')) currentX = getCoord(line, 'X');
+      if (line.includes('Y')) currentY = getCoord(line, 'Y');
+      if (line.includes('Z')) currentZ = getCoord(line, 'Z');
+      if (line.includes('U')) currentX += getCoord(line, 'U');
+      if (line.includes('V')) currentY += getCoord(line, 'V');
+      if (line.includes('W')) currentZ += getCoord(line, 'W');
 
-      //G,M,T
-      if (line.includes("T")) {
-        activeT = getFloatAfterChar(line, "T");
-        //arr.push("T" + n);
-      }
+      //T
+      if (line.includes("T")) activeT = getFloatAfterChar(line, "T");
+
+      //M,G
       while (line.includes('M')) {
         let n = getFloatAfterChar(line, 'M');
         switch(codeFilter('M', n)) {
@@ -318,23 +307,20 @@ function App() {
       return arr;
     }
 
-    //~~~ DECLARE GCODE VARIABLES AND MODAL STATES ~~~//
+    //DECLARE GCODE VARIABLES AND MODAL STATES
     //set defaults here!!
 
-    var n814 = 0, n815 = 0, n816 = 0, n817 = 0, n818 = 0, n819 = 0, n820 = 0, n821 = 0, n822 = 0, n823 = 0, n824 = 0, n893 = 0, n990 = 0, n991 = 0, n992 = 0;
-    var n521 = 521, n533 = 533, n555 = 555, n560 = 560;
-    var varArr = new Array(999).fill(null);
+    var varArr = new Array(30000).fill(0);
 
     var activeT = '/';
     var activeMA='/', activeMB='/', activeMC='/', activeMD='/', activeME='/';
     var activeGA='/', activeGB='/', activeGC='/', activeGD='/', activeGE='/', activeGF='/', activeGG='/', activeGH='/', activeGI='/', activeGJ='/', activeGK='/', activeGL='/', activeGM='/';
 
     var currentX=0, currentY=0, currentZ=0;
-    var currentU=0, currentV=0, currentW=0;
 
-    //~~~ PREPARE OUTPUT ~~~//
+    //PREPARE OUTPUT
     //preliminary scan for end variables
-    //then create objects for each line
+    //initialize objects for each line
 
     var output = '';
     var endVars = getVars(s);   //scan $0
@@ -359,18 +345,31 @@ function App() {
       };
     });
 
-    //~~~ GENERATE OUTPUT LINE BY LINE ~~~//
-    //act upon each object
+    //GENERATE OUTPUT
+    //assign properties to each line object (coordinates, modal codes, etc.)
+    //construct output text strings
 
     var n = 0;
     o.forEach(object => {     
       
       n++;            
-      object.id = n;                                //line numbers
+      object.id = n;                                //set line number
+
       object.name = clean(object.name);             //clean line for scanning
-      object.codeArray = getCodes(object.name);     //create list of codes found on this line
+
+      object.x1 = currentX;                         //set previous coords
+      object.y1 = currentY;
+      object.z1 = currentZ;
+
+      object.codeArray = getCodes(object.name);     //scan line
       
-      object.codeMA = activeMA;   //modal states
+      object.x2 = currentX;                         //set new coords
+      object.y2 = currentY;
+      object.z2 = currentZ;
+
+      object.tool = activeT;                        //set tool
+
+      object.codeMA = activeMA;                     //set modal states
       object.codeMB = activeMB;
       object.codeMC = activeMC;
       object.codeMD = activeMD;
@@ -388,16 +387,10 @@ function App() {
       object.codeGL = activeGL;
       object.codeGM = activeGM;
 
-      object.coordX = currentX+currentU;  //coords
-      object.coordY = currentY+currentV;
-      object.coordZ = currentZ+currentW;
-
-      object.tool = activeT;
-
-      output += object.id.toString().padStart(4, '0') + ' '; //build string to output
-      output += "[X " + object.coordX.toFixed(4) + ' ';
-      output += "Y " + object.coordY.toFixed(4) + ' ';
-      output += "Z " + object.coordZ.toFixed(4) + "] ";
+      output += object.id.toString().padStart(4, '0') + ' '; 
+      output += "[X " + object.x2.toFixed(4) + ' ';
+      output += "Y " + object.y2.toFixed(4) + ' ';
+      output += "Z " + object.z2.toFixed(4) + "] ";
       output += '\t';
 
       output += 'T' + object.tool + '\t';
@@ -443,6 +436,7 @@ function App() {
   }
   
   //~~~ EVENT HANDLING ~~~//
+  //input changes, upload clicks, mouse and button interactions with output windows
 
   const handleInputInteraction = (event) => {
     setInputText(event.target.value)
@@ -530,7 +524,7 @@ function App() {
         </Box>
         <div className="cornerChip1">
           <Chip 
-            label={"X1: " + lineItems1[currentLine1-1].coordX}
+            label={"$1 X: " + lineItems1[currentLine1-1].x2.toFixed(4)}
             size='small' 
             variant='filled'
             color='secondary'
@@ -538,7 +532,7 @@ function App() {
         </div>
         <div className="cornerChip2">
           <Chip 
-            label={"Y1: " + lineItems1[currentLine1-1].coordY}
+            label={"$1 Y: " + lineItems1[currentLine1-1].y2.toFixed(4)}
             size='small' 
             variant='filled'
             color='secondary'
@@ -546,7 +540,7 @@ function App() {
         </div>
         <div className="cornerChip3">
           <Chip 
-            label={"Z1: " + lineItems1[currentLine1-1].coordZ}
+            label={"$1 Z: " + lineItems1[currentLine1-1].z2.toFixed(4)}
             size='small' 
             variant='filled'
             color='secondary'
@@ -554,7 +548,7 @@ function App() {
         </div>
         <div className="cornerChip4">
           <Chip 
-            label={"X2: " + lineItems2[currentLine2-1].coordX}
+            label={"$2 X: " + lineItems2[currentLine2-1].x2.toFixed(4)}
             size='small' 
             variant='filled'
             color='info'
@@ -562,7 +556,7 @@ function App() {
         </div>
         <div className="cornerChip5">
           <Chip 
-            label={"Y2: " + lineItems2[currentLine2-1].coordY}
+            label={"$2 Y: " + lineItems2[currentLine2-1].y2.toFixed(4)}
             size='small' 
             variant='filled'
             color='info'
@@ -570,7 +564,7 @@ function App() {
         </div>
         <div className="cornerChip6">
           <Chip 
-            label={"Z2: " + lineItems2[currentLine2-1].coordZ}
+            label={"$2 Z: " + lineItems2[currentLine2-1].z2.toFixed(4)}
             size='small' 
             variant='filled'
             color='info'

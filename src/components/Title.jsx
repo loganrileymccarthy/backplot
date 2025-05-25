@@ -3,7 +3,7 @@ import './Title.css';
 function Title() {
     return (
       <div className="Title">
-        Backplot v2
+        Swiss GCode Backplotter, v2.3
       </div>
     );
   }

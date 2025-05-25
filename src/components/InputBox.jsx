@@ -10,16 +10,3 @@ export default function InputBox({text, handleChange}) {
     />
   )
 }
-/*
-export default function InputForm({inputText, setInputText}) {
-  return (
-    <textarea
-      name="inputBox"
-      placeholder="enter code"
-      value = {inputText}
-      onChange = {(e) => {setInputText(e.target.value)}}  
-      spellCheck={false}
-    />
-  )
-}
-*/

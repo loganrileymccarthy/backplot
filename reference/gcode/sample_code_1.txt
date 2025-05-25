@@ -1,6 +1,3 @@
-X-0.5
-
-
 O1673(7003712-REV.02)
 $1
 (<MACHINEID>L30</MACHINEID>)
@@ -9,7 +6,7 @@ M350X1000.Z1000.Y1000.
 (CYCLE TIME X.XX)
 
 M9
-G50Z0.01 (Where the bar/tool is
+G50Z0.01 (Where the bar/tool is)
 M52
 M6
 G4U1.
