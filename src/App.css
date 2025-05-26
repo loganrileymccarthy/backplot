@@ -8,18 +8,22 @@ textarea {
   white-space: pre;    
   overflow-wrap: normal;
 
-  font-family: monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
   font-size: 14px;
-  background-color: rgb(50, 54, 73);
   color: lightgrey;
-  padding: 10px;
+
+  background-color: rgba(50, 54, 73, 0.5);
   border: 1px solid black;
   border-radius: 5px;
+  
+  padding: 10px;
 }
 textarea:focus {
   outline: none;
+  color: lightblue;
   box-shadow: 0 0 5px rgba(0, 0, 255, 0.3);
-  background-color: black;
+  background-color: rgb(50, 54, 73);
 }
 
 canvas {
@@ -29,17 +33,23 @@ canvas {
   box-sizing: border-box;
 
   background-color: lightslategray;
-  padding: 10px;
   border: 1px solid black;
   border-radius: 5px;
 }
 
-.card1{
+.card{
   position: absolute;
   top: 0px;
   right: 0px;
   
+  box-sizing: border-box;
+
+  white-space: pre;
+
   font-family: monospace;
+  font-size: small;
+  font-weight: 300;
+
   opacity: 50%;
   border: 1px solid black;
   border-radius: 5px;

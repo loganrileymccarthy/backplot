@@ -1,0 +1,30 @@
+RE: Sizing:
+
+Material UI (flexbox) approach.
+The page is made of three 'containers,' arranged in a column: one for the header, one for the main content, and one for the footer.
+The header and footer containers are a set height in pixels (30?).
+The central container height is calculated as the page height (100vh) minus the header+footer height. This keeps the page filled vertically.
+Giving containers maxWidth={false} and children width={'100%'} keeps the page filled horizontally.
+
+'Boxes' within the containers are set to flexdirection=row and flexdirection=column to arrange their constituents.
+Boxes are set to percentages of the parent (usually 100%), not vh, so everything stays filled.
+It seems everything inside boxes should be set to box-sizing:border-box.
+
+The overlayed panels on the canvas are setup differently.
+Have had success with setting them to position:absolute; top:0px; right:0px; within a box with position:relative.
+That's the only reason for the extra parent box around each canvas+panel.
+Using a vh calculation for height seems the only way to get them to scale vertically with the underlying canvas.
+
+Need html height:100% and body min-height:100%
+
+
+
+more descriptive font-family:
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+
+from index.css, was in body:
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;

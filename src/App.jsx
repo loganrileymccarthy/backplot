@@ -4,6 +4,7 @@ import { create, all} from 'mathjs';
 
 import './App.css';
 import Title from './components/Title';
+import Footer from './components/Footer';
 import OutputBox from './components/OutputBox';
 import InputBox from './components/InputBox';
 
@@ -444,13 +445,13 @@ function App() {
   return (
     <div className="App">
       <>
-      <Container maxWidth={false} sx={{bgcolor: 'lightsteel', height: '5vh'}}>
+      <Container maxWidth={false} disableGutters sx={{bgcolor: 'lightsteel', height: '30px'}}>
         <Box display="flex" flexDirection={'row'} justifyContent={'center'}>
           <Title/>
         </Box>
       </Container>
       
-      <Container maxWidth={false} sx={{ bgcolor: 'lightsteel', height: '90vh'}}>
+      <Container maxWidth={false} disableGutters sx={{ bgcolor: 'lightsteel', height: 'calc(100vh - 80px)'}}>
 
         <Box display="flex" flexDirection={'row'} justifyContent={'center'} height={'100%'}>
           <Box display="flex" flexDirection={'column'} height={'100%'} width={'25%'}>
@@ -465,42 +466,49 @@ function App() {
               UPLOAD
             </Button>
           </Box>
-          <Box display="flex" flexDirection={'column'} height={'100%'} width={'100%'}>
+          <Box display="flex" flexDirection={'column'} height={'100%'} width={'75%'}>
             
             <Box display="flex" flexDirection={'row'} height={'75%'} width={'100%'}>
             <Box position="relative" height={'100%'} width={'100%'}>
               <canvas id="plot1"/>
-              <div className="card1">
-                <Card sx={{ width: 125, backgroundColor: 'dimgrey'}}>
+              <div className="card">
+                <Card sx={{width: '15vh', minWidth: 125, height: 'calc(75vh - 62px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
                   <CardContent>
-                    <Typography gutterBottom variant='inherit' fontSize={18}>
-                    $ 1
+                    <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
+                    $1
                     </Typography>
-                    <Typography variant='inherit' color='yellow'>
-                    X: {lineItems1[currentLine1-1].x2.toFixed(4)}<br />
-                    Y: {lineItems1[currentLine1-1].y2.toFixed(4)}<br />
-                    Z: {lineItems1[currentLine1-1].z2.toFixed(4)}<br />
+                    <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
+                    <br />
+                    X {lineItems1[currentLine1-1].x2.toFixed(4).padStart(8, ' ')}<br />
+                    Y {lineItems1[currentLine1-1].y2.toFixed(4).padStart(8, ' ')}<br />
+                    Z {lineItems1[currentLine1-1].z2.toFixed(4).padStart(8, ' ')}<br />
                     <br />
                     </Typography>
-                    <Typography variant='inherit' color='black'>
-                    N: {lineItems1[currentLine1-1].op}<br />
-                    T: {lineItems1[currentLine1-1].tool}<br />
+                    <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
+                    N{lineItems1[currentLine1-1].op.toString().padStart(4, ' ')}<br />
+                    T{lineItems1[currentLine1-1].tool.toString().padStart(4, ' ')}<br />
                     <br />
-                    M{lineItems1[currentLine1-1].codeMB}<br />
-                    M{lineItems1[currentLine1-1].codeMC}<br />
+                    </Typography>
+                    <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
+                    M
+                    {lineItems1[currentLine1-1].codeMB.toString().padStart(4, ' ')}<br />
+                    {lineItems1[currentLine1-1].codeMC}<br />
                     <br />
-                    G{lineItems1[currentLine1-1].codeGA}<br />
-                    G{lineItems1[currentLine1-1].codeGB}<br />
-                    G{lineItems1[currentLine1-1].codeGC}<br />
-                    G{lineItems1[currentLine1-1].codeGD}<br />
-                    G{lineItems1[currentLine1-1].codeGF}<br />
-                    G{lineItems1[currentLine1-1].codeGH}<br />
-                    G{lineItems1[currentLine1-1].codeGI}<br />
-                    G{lineItems1[currentLine1-1].codeGJ}<br />
-                    G{lineItems1[currentLine1-1].codeGK}<br />
-                    G{lineItems1[currentLine1-1].codeGL}<br />
-                    G{lineItems1[currentLine1-1].codeGM}<br />
-                    G{lineItems1[currentLine1-1].codeGN}<br />
+                    </Typography>
+                    <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
+                    G
+                    {lineItems1[currentLine1-1].codeGA.toString().padStart(4, ' ')}<br />
+                    {lineItems1[currentLine1-1].codeGB}<br />
+                    {lineItems1[currentLine1-1].codeGC}<br />
+                    {lineItems1[currentLine1-1].codeGD}<br />
+                    {lineItems1[currentLine1-1].codeGF}<br />
+                    {lineItems1[currentLine1-1].codeGH}<br />
+                    {lineItems1[currentLine1-1].codeGI}<br />
+                    {lineItems1[currentLine1-1].codeGJ}<br />
+                    {lineItems1[currentLine1-1].codeGK}<br />
+                    {lineItems1[currentLine1-1].codeGL}<br />
+                    {lineItems1[currentLine1-1].codeGM}<br />
+                    {lineItems1[currentLine1-1].codeGN}<br />
                     </Typography>
                   </CardContent>
                 </Card>
@@ -509,37 +517,42 @@ function App() {
 
               <Box position="relative" height={'100%'} width={'100%'}>
               <canvas id="plot2"/>
-              <div className="card1">
-                <Card sx={{ width: 125, backgroundColor: 'dimgrey'}}>
+              <div className="card">
+                <Card sx={{width: '15vh', minWidth: 125, height: 'calc(75vh - 62px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
                   <CardContent>
-                    <Typography gutterBottom variant='inherit' fontSize={18}>
-                    $ 2
+                    <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
+                    $2
                     </Typography>
-                    <Typography variant='inherit' color='yellow'>
-                    X: {lineItems2[currentLine2-1].x2.toFixed(4)}<br />
-                    Y: {lineItems2[currentLine2-1].y2.toFixed(4)}<br />
-                    Z: {lineItems2[currentLine2-1].z2.toFixed(4)}<br />
+                    <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
+                    <br />
+                    X {lineItems2[currentLine2-1].x2.toFixed(4).padStart(8, ' ')}<br />
+                    Y {lineItems2[currentLine2-1].y2.toFixed(4).padStart(8, ' ')}<br />
+                    Z {lineItems2[currentLine2-1].z2.toFixed(4).padStart(8, ' ')}<br />
                     <br />
                     </Typography>
-                    <Typography variant='inherit' color='black'>
-                    N: {lineItems2[currentLine2-1].op}<br />
-                    T: {lineItems2[currentLine2-1].tool}<br />
+                    <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
+                    N{lineItems2[currentLine2-1].op.toString().padStart(4, ' ')}<br />
+                    T{lineItems2[currentLine2-1].tool.toString().padStart(4, ' ')}<br />
                     <br />
-                    M{lineItems2[currentLine2-1].codeMB}<br />
-                    M{lineItems2[currentLine2-1].codeMC}<br />
+                    </Typography>
+                    <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
+                    M{lineItems2[currentLine2-1].codeMB.toString().padStart(4, ' ')}<br />
+                    {lineItems2[currentLine2-1].codeMC}<br />
                     <br />
-                    G{lineItems2[currentLine2-1].codeGA}<br />
-                    G{lineItems2[currentLine2-1].codeGB}<br />
-                    G{lineItems2[currentLine2-1].codeGC}<br />
-                    G{lineItems2[currentLine2-1].codeGD}<br />
-                    G{lineItems2[currentLine2-1].codeGF}<br />
-                    G{lineItems2[currentLine2-1].codeGH}<br />
-                    G{lineItems2[currentLine2-1].codeGI}<br />
-                    G{lineItems2[currentLine2-1].codeGJ}<br />
-                    G{lineItems2[currentLine2-1].codeGK}<br />
-                    G{lineItems2[currentLine2-1].codeGL}<br />
-                    G{lineItems2[currentLine2-1].codeGM}<br />
-                    G{lineItems2[currentLine2-1].codeGN}<br />
+                    </Typography>
+                    <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
+                    G{lineItems2[currentLine2-1].codeGA.toString().padStart(4, ' ')}<br />
+                    {lineItems2[currentLine2-1].codeGB}<br />
+                    {lineItems2[currentLine2-1].codeGC}<br />
+                    {lineItems2[currentLine2-1].codeGD}<br />
+                    {lineItems2[currentLine2-1].codeGF}<br />
+                    {lineItems2[currentLine2-1].codeGH}<br />
+                    {lineItems2[currentLine2-1].codeGI}<br />
+                    {lineItems2[currentLine2-1].codeGJ}<br />
+                    {lineItems2[currentLine2-1].codeGK}<br />
+                    {lineItems2[currentLine2-1].codeGL}<br />
+                    {lineItems2[currentLine2-1].codeGM}<br />
+                    {lineItems2[currentLine2-1].codeGN}<br />
                     </Typography>
                   </CardContent>
                 </Card>
@@ -563,7 +576,12 @@ function App() {
             </Box>
           </Box>
         </Box>
-        
+      </Container>
+
+      <Container maxWidth={false} disableGutters sx={{bgcolor: 'lightsteel', height: '30px'}}>
+        <Box display="flex" flexDirection={'row'} justifyContent={'right'}>
+          <Footer/>
+        </Box>
       </Container>
       </>
     </div>
