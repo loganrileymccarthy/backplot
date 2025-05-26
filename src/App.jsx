@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import {Box, Container, Button, Chip} from "@mui/material";
-import { create, all } from 'mathjs';
+import {Box, Container, Button, Card, CardContent, CardMedia, CardActionArea, Typography} from "@mui/material";
+import { create, all} from 'mathjs';
 
 import './App.css';
 import Title from './components/Title';
@@ -16,8 +16,8 @@ function App() {
   const [output1, setOutput1] = useState();
   const [output2, setOutput2] = useState();
   const [output3, setOutput3] = useState();
-  const [lineItems1, setLineItems1] = useState([{name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, codeMB:0, codeMC:0, codeMD:0, codeGA:0, codeGB:0, codeGC:0, codeGD:0, codeGE:0, codeGF:0, codeGG:0, codeGH:0, codeGI:0, codeGJ:0, codeGK:0, codeGL:0, codeGM:0, codeGN:0, codeGO:0}]);
-  const [lineItems2, setLineItems2] = useState([{name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, codeMB:0, codeMC:0, codeMD:0, codeGA:0, codeGB:0, codeGC:0, codeGD:0, codeGE:0, codeGF:0, codeGG:0, codeGH:0, codeGI:0, codeGJ:0, codeGK:0, codeGL:0, codeGM:0, codeGN:0, codeGO:0}]);
+  const [lineItems1, setLineItems1] = useState([{name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, codeMB:'', codeMC:'', codeMD:'', codeGA:'', codeGB:'', codeGC:'', codeGD:'', codeGE:'', codeGF:'', codeGG:'', codeGH:'', codeGI:'', codeGJ:'', codeGK:'', codeGL:'', codeGM:'', codeGN:'', codeGO:''}]);
+  const [lineItems2, setLineItems2] = useState([{name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, codeMB:'', codeMC:'', codeMD:'', codeGA:'', codeGB:'', codeGC:'', codeGD:'', codeGE:'', codeGF:'', codeGG:'', codeGH:'', codeGI:'', codeGJ:'', codeGK:'', codeGL:'', codeGM:'', codeGN:'', codeGO:''}]);
   const [currentWindow, setCurrentWindow] = useState(0);
   const [currentLine1, setCurrentLine1] = useState(1);
   const [currentLine2, setCurrentLine2] = useState(1);
@@ -77,24 +77,6 @@ function App() {
         substr += str[i];
       }
       return substr;
-    }
-    function addBits(s) {                       //for evaluating expressions
-      var total = 0,
-          s = s.match(/[+\-]*(\.\d+|\d+(\.\d+)?)/g) || [];
-          
-      while (s.length) {
-        total += parseFloat(s.shift());
-      }
-      return total;
-    }
-    function strBetweenChars(str, char1, char2) {
-      const index1 = str.indexOf(char1);
-      const index2 = str.indexOf(char2);
-        if (index1 !== -1 && index2 !== -1 && index1 < index2) {
-          return str.substring(index1 + 1, index2);
-        } else {
-          return "";
-    }
     }
     function getVars(str) {   //initial scan whole text for $0
       const index = str.indexOf("$0");
@@ -283,9 +265,9 @@ function App() {
 
     var varArr = new Array(30000).fill(0);
 
-    var activeT = '/', activeN = '/';
-    var activeMA='/', activeMB='/', activeMC='/', activeMD='/', activeME='/';
-    var activeGA='/', activeGB='/', activeGC='/', activeGD='/', activeGE='/', activeGF='/', activeGG='/', activeGH='/', activeGI='/', activeGJ='/', activeGK='/', activeGL='/', activeGM='/', activeGN='/', activeGO='/';
+    var activeT = '', activeN = '';
+    var activeMA='', activeMB='', activeMC='', activeMD='', activeME='';
+    var activeGA='', activeGB='', activeGC='', activeGD='', activeGE='', activeGF='', activeGG='', activeGH='', activeGI='', activeGJ='', activeGK='', activeGL='', activeGM='', activeGN='', activeGO='';
 
     var currentX=0, currentY=0, currentZ=0;
 
@@ -469,6 +451,7 @@ function App() {
       </Container>
       
       <Container maxWidth={false} sx={{ bgcolor: 'lightsteel', height: '90vh'}}>
+
         <Box display="flex" flexDirection={'row'} justifyContent={'center'} height={'100%'}>
           <Box display="flex" flexDirection={'column'} height={'100%'} width={'25%'}>
             <InputBox
@@ -476,16 +459,94 @@ function App() {
               handleChange = {handleInputInteraction}
             />
             <Button 
-              variant='contained' 
-              color='secondary'
+              variant='contained'
+              color='primary'
               onClick = {handleUpload}>
               UPLOAD
             </Button>
           </Box>
           <Box display="flex" flexDirection={'column'} height={'100%'} width={'100%'}>
-            <canvas
-              id="plot"
-            />
+            
+            <Box display="flex" flexDirection={'row'} height={'75%'} width={'100%'}>
+            <Box position="relative" height={'100%'} width={'100%'}>
+              <canvas id="plot1"/>
+              <div className="card1">
+                <Card sx={{ width: 125, backgroundColor: 'dimgrey'}}>
+                  <CardContent>
+                    <Typography gutterBottom variant='inherit' fontSize={18}>
+                    $ 1
+                    </Typography>
+                    <Typography variant='inherit' color='yellow'>
+                    X: {lineItems1[currentLine1-1].x2.toFixed(4)}<br />
+                    Y: {lineItems1[currentLine1-1].y2.toFixed(4)}<br />
+                    Z: {lineItems1[currentLine1-1].z2.toFixed(4)}<br />
+                    <br />
+                    </Typography>
+                    <Typography variant='inherit' color='black'>
+                    N: {lineItems1[currentLine1-1].op}<br />
+                    T: {lineItems1[currentLine1-1].tool}<br />
+                    <br />
+                    M{lineItems1[currentLine1-1].codeMB}<br />
+                    M{lineItems1[currentLine1-1].codeMC}<br />
+                    <br />
+                    G{lineItems1[currentLine1-1].codeGA}<br />
+                    G{lineItems1[currentLine1-1].codeGB}<br />
+                    G{lineItems1[currentLine1-1].codeGC}<br />
+                    G{lineItems1[currentLine1-1].codeGD}<br />
+                    G{lineItems1[currentLine1-1].codeGF}<br />
+                    G{lineItems1[currentLine1-1].codeGH}<br />
+                    G{lineItems1[currentLine1-1].codeGI}<br />
+                    G{lineItems1[currentLine1-1].codeGJ}<br />
+                    G{lineItems1[currentLine1-1].codeGK}<br />
+                    G{lineItems1[currentLine1-1].codeGL}<br />
+                    G{lineItems1[currentLine1-1].codeGM}<br />
+                    G{lineItems1[currentLine1-1].codeGN}<br />
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </div>
+              </Box>
+
+              <Box position="relative" height={'100%'} width={'100%'}>
+              <canvas id="plot2"/>
+              <div className="card1">
+                <Card sx={{ width: 125, backgroundColor: 'dimgrey'}}>
+                  <CardContent>
+                    <Typography gutterBottom variant='inherit' fontSize={18}>
+                    $ 2
+                    </Typography>
+                    <Typography variant='inherit' color='yellow'>
+                    X: {lineItems2[currentLine2-1].x2.toFixed(4)}<br />
+                    Y: {lineItems2[currentLine2-1].y2.toFixed(4)}<br />
+                    Z: {lineItems2[currentLine2-1].z2.toFixed(4)}<br />
+                    <br />
+                    </Typography>
+                    <Typography variant='inherit' color='black'>
+                    N: {lineItems2[currentLine2-1].op}<br />
+                    T: {lineItems2[currentLine2-1].tool}<br />
+                    <br />
+                    M{lineItems2[currentLine2-1].codeMB}<br />
+                    M{lineItems2[currentLine2-1].codeMC}<br />
+                    <br />
+                    G{lineItems2[currentLine2-1].codeGA}<br />
+                    G{lineItems2[currentLine2-1].codeGB}<br />
+                    G{lineItems2[currentLine2-1].codeGC}<br />
+                    G{lineItems2[currentLine2-1].codeGD}<br />
+                    G{lineItems2[currentLine2-1].codeGF}<br />
+                    G{lineItems2[currentLine2-1].codeGH}<br />
+                    G{lineItems2[currentLine2-1].codeGI}<br />
+                    G{lineItems2[currentLine2-1].codeGJ}<br />
+                    G{lineItems2[currentLine2-1].codeGK}<br />
+                    G{lineItems2[currentLine2-1].codeGL}<br />
+                    G{lineItems2[currentLine2-1].codeGM}<br />
+                    G{lineItems2[currentLine2-1].codeGN}<br />
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </div>
+            </Box>
+            </Box>
+
             <Box display="flex" flexDirection={'row'} height={'25%'} width={'100%'}>
               <OutputBox
                 $={1}
@@ -502,234 +563,6 @@ function App() {
             </Box>
           </Box>
         </Box>
-        <div className="cornerChip101">
-          <Chip 
-            label={"X: " + lineItems1[currentLine1-1].x2.toFixed(4)}
-            size='small' variant='filled' color='secondary'
-          />
-        </div>
-        <div className="cornerChip102">
-          <Chip 
-            label={"Y: " + lineItems1[currentLine1-1].y2.toFixed(4)}
-            size='small' variant='filled' color='secondary'
-          />
-        </div>
-        <div className="cornerChip103">
-          <Chip 
-            label={"Z: " + lineItems1[currentLine1-1].z2.toFixed(4)}
-            size='small' variant='filled' color='secondary'
-          />
-        </div>
-        <div className="cornerChip104">
-          <Chip 
-            label={"N: " + lineItems1[currentLine1-1].op}
-            size='small' variant='filled' color='primary'
-          />
-        </div>
-        <div className="cornerChip105">
-          <Chip 
-            label={"T: " + lineItems1[currentLine1-1].tool}
-            size='small'  variant='filled' color='primary'
-          />
-        </div>
-        <div className="cornerChip107">
-          <Chip 
-            label={"M " + lineItems1[currentLine1-1].codeMB}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip108">
-          <Chip 
-            label={"M " + lineItems1[currentLine1-1].codeMC}
-            size='small'  variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip109">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGA}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip110">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGB}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip111">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGC}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip112">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGD}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip113">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGF}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip114">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGH}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip115">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGI}
-            size='small'  variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip116">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGJ}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip117">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGK}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip118">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGL}
-            size='small'  variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip119">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGM}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip120">
-          <Chip 
-            label={"G " + lineItems1[currentLine1-1].codeGN}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip201">
-          <Chip 
-            label={"X: " + lineItems2[currentLine2-1].x2.toFixed(4)}
-            size='small' variant='filled' color='secondary'
-          />
-        </div>
-        <div className="cornerChip202">
-          <Chip 
-            label={"Y: " + lineItems2[currentLine2-1].y2.toFixed(4)}
-            size='small' variant='filled' color='secondary'
-          />
-        </div>
-        <div className="cornerChip203">
-          <Chip 
-            label={"Z: " + lineItems2[currentLine2-1].z2.toFixed(4)}
-            size='small' variant='filled' color='secondary'
-          />
-        </div>
-        <div className="cornerChip204">
-          <Chip 
-            label={"N: " + lineItems2[currentLine2-1].op}
-            size='small' variant='filled' color='primary'
-          />
-        </div>
-        <div className="cornerChip205">
-          <Chip 
-            label={"T: " + lineItems2[currentLine2-1].tool}
-            size='small'  variant='filled' color='primary'
-          />
-        </div>
-        <div className="cornerChip207">
-          <Chip 
-            label={"M " + lineItems2[currentLine2-1].codeMB}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip208">
-          <Chip 
-            label={"M " + lineItems2[currentLine2-1].codeMC}
-            size='small'  variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip209">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGA}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip210">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGB}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip211">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGC}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip212">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGD}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip213">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGF}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip214">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGH}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip215">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGI}
-            size='small'  variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip216">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGJ}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip217">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGK}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip218">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGL}
-            size='small'  variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip219">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGM}
-            size='small' variant='filled' color='success'
-          />
-        </div>
-        <div className="cornerChip220">
-          <Chip 
-            label={"G " + lineItems2[currentLine2-1].codeGN}
-            size='small' variant='filled' color='success'
-          />
-        </div>
         
       </Container>
       </>
