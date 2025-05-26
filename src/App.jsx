@@ -16,8 +16,8 @@ function App() {
   const [output1, setOutput1] = useState();
   const [output2, setOutput2] = useState();
   const [output3, setOutput3] = useState();
-  const [lineItems1, setLineItems1] = useState([{x1:0, y1:0, z1:0, x2:0, y2:0, z2:0}]);
-  const [lineItems2, setLineItems2] = useState([{x1:0, y1:0, z1:0, x2:0, y2:0, z2:0}]);
+  const [lineItems1, setLineItems1] = useState([{name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, codeMB:0, codeMC:0, codeMD:0, codeGA:0, codeGB:0, codeGC:0, codeGD:0, codeGE:0, codeGF:0, codeGG:0, codeGH:0, codeGI:0, codeGJ:0, codeGK:0, codeGL:0, codeGM:0, codeGN:0, codeGO:0}]);
+  const [lineItems2, setLineItems2] = useState([{name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, codeMB:0, codeMC:0, codeMD:0, codeGA:0, codeGB:0, codeGC:0, codeGD:0, codeGE:0, codeGF:0, codeGG:0, codeGH:0, codeGI:0, codeGJ:0, codeGK:0, codeGL:0, codeGM:0, codeGN:0, codeGO:0}]);
   const [currentWindow, setCurrentWindow] = useState(0);
   const [currentLine1, setCurrentLine1] = useState(1);
   const [currentLine2, setCurrentLine2] = useState(1);
@@ -127,17 +127,21 @@ function App() {
         let varNum = getNumberAfterChar(line, '#');
         let varText = '#' + varNum.toString();
         
-        //declaration
+        //if it's a declaration
         if (getCharAfterSubstr(line, varText) == '=') {
+          let postEq = line.substr(line.indexOf('=') + 1);
           
-          //declared equal to another variable
-          if (getCharAfterSubstr(line, varText + '=') == '#') {
-            let var2Num = getNumberAfterChar(line, "=#");
+          //handle variables on right side of equals sign
+          while (postEq.includes('#')) {
+            let var2Num = getNumberAfterChar(postEq, "#");
             let var2Text = '#' + var2Num.toString();
-            line = line.replace(var2Text, varArr[var2Num].toString());
+            postEq = postEq.replace(var2Text, varArr[var2Num].toString());
           }
           
-          let varVal = getFloatAfterChar(line, varText+'=');
+          //assign new value to variable on left of equals sign
+          postEq = postEq.replace('[', '(');
+          postEq = postEq.replace(']', ')');
+          let varVal = math.evaluate(postEq);
           varArr[varNum] = varVal;
           line = line.replace(varText + '=', varNum.toString() + "::");
         }
@@ -152,32 +156,36 @@ function App() {
       switch (letter) {
         case 'G':
           switch (num) {
-            case 1: case 2: case 3: case 33: case 38: case 73: case 76: case 80: case 81: case 82: case 84: case 85: case 86: case 87: case 88: case 89:
+            case 0: case 1: case 2: case 3: case 33: case 38: case 73: case 76: case 80: case 81: case 82: case 84: case 85: case 86: case 87: case 88: case 89:
               return 'A';
-            case 17: case 18: case 19: case 17.1: case 17.2: case 17.3:
-              return 'B';
-            case 90: case 91:
-              return 'C';
-            case 90.1: case 91.1:
-              return 'D';
-            case 93: case 94:
-              return 'E';
-            case 20: case 21:
-              return 'F';
-            case 40: case 41: case 42: case 41.1: case 41.2:
-              return 'G';
-            case 43: case 43.1: case 49:
-              return 'H';
-            case 98: case 99:
-              return 'I';
-            case 54: case 55: case 56: case 57: case 58: case 59: case 59.1: case 59.2: case 59.3:
-              return 'J';
-            case 61: case 61.1: case 64:
-              return 'K';
-            case 96: case 97:
-              return 'L';
             case 7: case 8:
+              return 'B';
+            case 15: case 16:
+              return 'C';
+            case 17: case 18: case 19: case 17.1: case 17.2: case 17.3:
+              return 'D';
+            case 20: case 21:
+              return 'E';
+            case 40: case 41: case 42: case 41.1: case 41.2:
+              return 'F';
+            case 43: case 43.1: case 49:
+              return 'G';
+            case 54: case 55: case 56: case 57: case 58: case 59: case 59.1: case 59.2: case 59.3:
+              return 'H';
+            case 61: case 61.1: case 64:
+              return 'I';
+            case 90: case 91:
+              return 'J';
+            case 90.1: case 91.1:
+              return 'K';
+            case 93: case 94: case 95:
+              return 'L';
+            case 96: case 97:
               return 'M';
+            case 98: case 99:
+              return 'N';
+            case 115: case 116: case 149:
+              return 'O';
             default:
               return 'Z';
           }
@@ -227,81 +235,44 @@ function App() {
       if (line.includes('V')) currentY += getCoord(line, 'V');
       if (line.includes('W')) currentZ += getCoord(line, 'W');
 
-      //T
-      if (line.includes("T")) activeT = getFloatAfterChar(line, "T");
+      //T,N
+      if (line.includes('T')) activeT = getFloatAfterChar(line, 'T');
+      if (line.includes('N')) activeN = getFloatAfterChar(line, 'N');
 
       //M,G
       while (line.includes('M')) {
         let n = getFloatAfterChar(line, 'M');
         switch(codeFilter('M', n)) {
-          case 'A':
-            activeMA = n;
-            break;
-          case 'B':
-            activeMB = n;
-            break;
-          case 'C':
-            activeMC = n;
-            break;
-          case 'D':
-            activeMD = n;
-            break;
-          case 'E':
-            activeME = n;
-            break;
-          default:
-            arr.push('M' + n);
-            break;
+          case 'A': activeMA = n; break;
+          case 'B': activeMB = n; break;
+          case 'C': activeMC = n; break;
+          case 'D': activeMD = n; break;
+          case 'E': activeME = n; break;
+          default: arr.push('M' + n); break;
         }
-        line = line.replace('M' + n, '_');
+        line = line.replace('M', '_');
       }
       while (line.includes('G')) {
         let n = getFloatAfterChar(line, 'G');
         switch(codeFilter('G', n)) {
-          case 'A':
-            activeGA = n;
-            break;
-          case 'B':
-            activeGB = n;
-            break;
-          case 'C':
-            activeGC = n;
-            break;
-          case 'D':
-            activeGD = n;
-            break;
-          case 'E':
-            activeGE = n;
-            break;
-          case 'F':
-            activeGF = n;
-            break;
-          case 'G':
-            activeGG = n;
-            break;
-          case 'H':
-            activeGH = n;
-            break;
-          case 'I':
-            activeGI = n;
-            break;
-          case 'J':
-            activeGJ = n;
-            break;
-          case 'K':
-            activeGK = n;
-            break;
-          case 'L':
-            activeGL = n;
-            break;
-          case 'M':
-            activeGM = n;
-            break;
-          default:
-            arr.push('G' + n);
-            break;
+          case 'A': activeGA = n; break;
+          case 'B': activeGB = n; break;
+          case 'C': activeGC = n; break;
+          case 'D': activeGD = n; break;
+          case 'E': activeGE = n; break;
+          case 'F': activeGF = n; break;
+          case 'G': activeGG = n; break;
+          case 'H': activeGH = n; break;
+          case 'I': activeGI = n; break;
+          case 'J': activeGJ = n; break;
+          case 'K': activeGK = n; break;
+          case 'L': activeGL = n; break;
+          case 'M': activeGM = n; break;
+          case 'N': activeGN = n; break;
+          case 'O': activeGO = n; break;
+          default: arr.push('G' + n); break;
         }
-        line = line.replace('G' + n, '_');
+        line = line.replace('G', '_');
       }
       
       return arr;
@@ -312,9 +283,9 @@ function App() {
 
     var varArr = new Array(30000).fill(0);
 
-    var activeT = '/';
+    var activeT = '/', activeN = '/';
     var activeMA='/', activeMB='/', activeMC='/', activeMD='/', activeME='/';
-    var activeGA='/', activeGB='/', activeGC='/', activeGD='/', activeGE='/', activeGF='/', activeGG='/', activeGH='/', activeGI='/', activeGJ='/', activeGK='/', activeGL='/', activeGM='/';
+    var activeGA='/', activeGB='/', activeGC='/', activeGD='/', activeGE='/', activeGF='/', activeGG='/', activeGH='/', activeGI='/', activeGJ='/', activeGK='/', activeGL='/', activeGM='/', activeGN='/', activeGO='/';
 
     var currentX=0, currentY=0, currentZ=0;
 
@@ -368,11 +339,13 @@ function App() {
       object.z2 = currentZ;
 
       object.tool = activeT;                        //set tool
+      object.op = activeN;
 
       object.codeMA = activeMA;                     //set modal states
       object.codeMB = activeMB;
       object.codeMC = activeMC;
       object.codeMD = activeMD;
+      object.codeME = activeME;
       object.codeGA = activeGA;
       object.codeGB = activeGB;
       object.codeGC = activeGC;
@@ -386,38 +359,45 @@ function App() {
       object.codeGK = activeGK;
       object.codeGL = activeGL;
       object.codeGM = activeGM;
+      object.codeGN = activeGN;
+      object.codeGO = activeGO;
 
       output += object.id.toString().padStart(4, '0') + ' '; 
+      /*
       output += "[X " + object.x2.toFixed(4) + ' ';
       output += "Y " + object.y2.toFixed(4) + ' ';
       output += "Z " + object.z2.toFixed(4) + "] ";
       output += '\t';
-
+      
+      output += 'N' + object.op + ' ';
       output += 'T' + object.tool + '\t';
-      //output += 'M' + object.codeMA + ' ';
+
+      output += 'M' + object.codeMA + ' ';
       output += 'M' + object.codeMB + ' ';
       output += 'M' + object.codeMC + ' ';
-      //output += 'M' + object.codeMD + ' ';
+      output += 'M' + object.codeMD + ' ';
       output += 'G' + object.codeGA + ' ';
       output += 'G' + object.codeGB + ' ';
-      //output += 'G' + object.codeGC + ' ';
-      //output += 'G' + object.codeGD + ' ';
-      //output += 'G' + object.codeGE + ' ';
-      //output += 'G' + object.codeGF + ' ';
+      output += 'G' + object.codeGC + ' ';
+      output += 'G' + object.codeGD + ' ';
+      output += 'G' + object.codeGE + ' ';
+      output += 'G' + object.codeGF + ' ';
       output += 'G' + object.codeGG + ' ';
-      //output += 'G' + object.codeGH + ' ';
-      //output += 'G' + object.codeGI + ' ';
+      output += 'G' + object.codeGH + ' ';
+      output += 'G' + object.codeGI + ' ';
       output += 'G' + object.codeGJ + ' ';
-      //output += 'G' + object.codeGK + ' ';
-      //output += 'G' + object.codeGL + ' ';
-      //output += 'G' + object.codeGM + ' ';
-      //output += object.codeArray + ' ';
+      output += 'G' + object.codeGK + ' ';
+      output += 'G' + object.codeGL + ' ';
+      output += 'G' + object.codeGM + ' ';
+      output += object.codeArray + ' ';
       output += '\t';
+      */
 
       output += object.name + ' ';
       output += '\n';
     });
-
+    
+    //update state of line objects for rendering
     switch ($) {
       case 1: //$1
         setLineItems1(o);
@@ -506,7 +486,7 @@ function App() {
             <canvas
               id="plot"
             />
-            <Box display="flex" flexDirection={'row'} height={'30%'} width={'100%'}>
+            <Box display="flex" flexDirection={'row'} height={'25%'} width={'100%'}>
               <OutputBox
                 $={1}
                 text={output1}
@@ -522,54 +502,235 @@ function App() {
             </Box>
           </Box>
         </Box>
-        <div className="cornerChip1">
+        <div className="cornerChip101">
           <Chip 
-            label={"$1 X: " + lineItems1[currentLine1-1].x2.toFixed(4)}
-            size='small' 
-            variant='filled'
-            color='secondary'
+            label={"X: " + lineItems1[currentLine1-1].x2.toFixed(4)}
+            size='small' variant='filled' color='secondary'
           />
         </div>
-        <div className="cornerChip2">
+        <div className="cornerChip102">
           <Chip 
-            label={"$1 Y: " + lineItems1[currentLine1-1].y2.toFixed(4)}
-            size='small' 
-            variant='filled'
-            color='secondary'
+            label={"Y: " + lineItems1[currentLine1-1].y2.toFixed(4)}
+            size='small' variant='filled' color='secondary'
           />
         </div>
-        <div className="cornerChip3">
+        <div className="cornerChip103">
           <Chip 
-            label={"$1 Z: " + lineItems1[currentLine1-1].z2.toFixed(4)}
-            size='small' 
-            variant='filled'
-            color='secondary'
+            label={"Z: " + lineItems1[currentLine1-1].z2.toFixed(4)}
+            size='small' variant='filled' color='secondary'
           />
         </div>
-        <div className="cornerChip4">
+        <div className="cornerChip104">
           <Chip 
-            label={"$2 X: " + lineItems2[currentLine2-1].x2.toFixed(4)}
-            size='small' 
-            variant='filled'
-            color='info'
+            label={"N: " + lineItems1[currentLine1-1].op}
+            size='small' variant='filled' color='primary'
           />
         </div>
-        <div className="cornerChip5">
+        <div className="cornerChip105">
           <Chip 
-            label={"$2 Y: " + lineItems2[currentLine2-1].y2.toFixed(4)}
-            size='small' 
-            variant='filled'
-            color='info'
+            label={"T: " + lineItems1[currentLine1-1].tool}
+            size='small'  variant='filled' color='primary'
           />
         </div>
-        <div className="cornerChip6">
+        <div className="cornerChip107">
           <Chip 
-            label={"$2 Z: " + lineItems2[currentLine2-1].z2.toFixed(4)}
-            size='small' 
-            variant='filled'
-            color='info'
+            label={"M " + lineItems1[currentLine1-1].codeMB}
+            size='small' variant='filled' color='success'
           />
         </div>
+        <div className="cornerChip108">
+          <Chip 
+            label={"M " + lineItems1[currentLine1-1].codeMC}
+            size='small'  variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip109">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGA}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip110">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGB}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip111">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGC}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip112">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGD}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip113">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGF}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip114">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGH}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip115">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGI}
+            size='small'  variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip116">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGJ}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip117">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGK}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip118">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGL}
+            size='small'  variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip119">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGM}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip120">
+          <Chip 
+            label={"G " + lineItems1[currentLine1-1].codeGN}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip201">
+          <Chip 
+            label={"X: " + lineItems2[currentLine2-1].x2.toFixed(4)}
+            size='small' variant='filled' color='secondary'
+          />
+        </div>
+        <div className="cornerChip202">
+          <Chip 
+            label={"Y: " + lineItems2[currentLine2-1].y2.toFixed(4)}
+            size='small' variant='filled' color='secondary'
+          />
+        </div>
+        <div className="cornerChip203">
+          <Chip 
+            label={"Z: " + lineItems2[currentLine2-1].z2.toFixed(4)}
+            size='small' variant='filled' color='secondary'
+          />
+        </div>
+        <div className="cornerChip204">
+          <Chip 
+            label={"N: " + lineItems2[currentLine2-1].op}
+            size='small' variant='filled' color='primary'
+          />
+        </div>
+        <div className="cornerChip205">
+          <Chip 
+            label={"T: " + lineItems2[currentLine2-1].tool}
+            size='small'  variant='filled' color='primary'
+          />
+        </div>
+        <div className="cornerChip207">
+          <Chip 
+            label={"M " + lineItems2[currentLine2-1].codeMB}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip208">
+          <Chip 
+            label={"M " + lineItems2[currentLine2-1].codeMC}
+            size='small'  variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip209">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGA}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip210">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGB}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip211">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGC}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip212">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGD}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip213">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGF}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip214">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGH}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip215">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGI}
+            size='small'  variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip216">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGJ}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip217">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGK}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip218">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGL}
+            size='small'  variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip219">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGM}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        <div className="cornerChip220">
+          <Chip 
+            label={"G " + lineItems2[currentLine2-1].codeGN}
+            size='small' variant='filled' color='success'
+          />
+        </div>
+        
       </Container>
       </>
     </div>
