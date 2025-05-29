@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {Box, Container, Button, Card, CardContent, CardMedia, CardActionArea, Typography} from "@mui/material";
 import { create, all} from 'mathjs';
 
 import './App.css';
 import Title from './components/Title';
 import Footer from './components/Footer';
-import OutputBox from './components/OutputBox';
 import InputBox from './components/InputBox';
+import OutputBox from './components/OutputBox';
+
 
 function App() {
   
   //~~~ INITIALIZE USESTATE ~~~//
   //for things that should change and cause the page to re-render
-
   const [inputText, setInputText] = useState();
   const [output1, setOutput1] = useState();
   const [output2, setOutput2] = useState();
@@ -22,21 +22,28 @@ function App() {
   const [currentWindow, setCurrentWindow] = useState(0);
   const [currentLine1, setCurrentLine1] = useState(1);
   const [currentLine2, setCurrentLine2] = useState(1);
+  
+  //~~~ INITIALIZE USEREF ~~~//
+  //for referencing canvases to draw on
+  const canvasRef1 = useRef(null);
+  const canvasRef2 = useRef(null);
+
+  //~~~ INITIALIZE USEEFFECT ~~~//
+  //for drawing based on currentLine change
+  useEffect(() => {drawFunction(1);}, [currentLine1]);
+  useEffect(() => {drawFunction(2);}, [currentLine2]);
 
   //~~~ INITIALIZE MATHJS INSTANCE ~~~//
   //for evaluating expressions
-
   const math = create(all,  {});
 
   //~~~ MAIN OUTPUT FUNCTION ~~~//
+  //called when user clicks upload
   //set $ = which section to output
   //no $ = whole code
-
   function outputFunction (s, $) {
 
-    //CHILD FUNCTIONS
-    //to be called later
-
+    //CHILD FUNCTIONS to be called later
     function getNumberAfterChar(str, char) {    //used multiple places
       const index = str.indexOf(char);
       if (index === -1) {
@@ -380,7 +387,7 @@ function App() {
       output += '\n';
     });
     
-    //update state of line objects for rendering
+    //update line objects state only after reading all lines
     switch ($) {
       case 1: //$1
         setLineItems1(o);
@@ -397,12 +404,111 @@ function App() {
     output = output.slice(0,-1);  //deletes empty line at end
     return output;
   }
-  
+
+  //~~~ DRAWING FUNCTION ~~~//
+  //called when user interacts with output text
+  const drawFunction = ($) => {
+    
+    let canvas, x1, x2, y1, y2;
+    let scale = 100;
+
+    const drawGrid = (canvas, context, spacing) => {
+      context.clearRect(0,0,canvas.width, canvas.height);
+      context.strokeStyle = 'lightgray';
+      context.lineWidth = 0.2;
+      
+      for (let x = canvas.width/2; x <= canvas.width; x += spacing) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+      }
+      for (let x = canvas.width / 2; x >= 0; x -= spacing) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+      }
+      for (let y = canvas.height / 2; y <= canvas.height; y += spacing) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
+      }
+      for (let y = canvas.height / 2; y >= 0; y -= spacing) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
+      }
+    }
+
+    switch($) {
+      case 1:
+
+        canvas = canvasRef1.current;
+        const ctx1 = canvas.getContext('2d');
+        canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
+        canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
+        drawGrid(canvas, ctx1, scale/4);
+
+        x1 = (canvas.width / 2) + (lineItems1[currentLine1-1].z1 * scale);
+        x2 = (canvas.width / 2) + (lineItems1[currentLine1-1].z2 * scale);
+        y1 = (canvas.height / 2) - (lineItems1[currentLine1-1].x1 * scale);
+        y2 = (canvas.height / 2) - (lineItems1[currentLine1-1].x2 * scale);
+
+        ctx1.beginPath();
+        ctx1.lineWidth = 1;
+        ctx1.strokeStyle = 'red';
+        ctx1.moveTo(x1, y1);
+        ctx1.lineTo(x2, y2);
+        ctx1.stroke();
+
+        ctx1.beginPath();
+        ctx1.arc(x2, y2, 5, 0, 2 * Math.PI);
+        ctx1.strokeStyle = 'white'; 
+        ctx1.lineWidth = 1;
+        ctx1.stroke();
+
+        break;
+      case 2:
+
+        canvas = canvasRef2.current;
+        const ctx2 = canvas.getContext('2d');
+        canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
+        canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
+        drawGrid(canvas, ctx2, scale/4);
+
+        x1 =(canvas.width / 2) + (lineItems2[currentLine2-1].z1 * scale);
+        x2 = (canvas.width / 2) + (lineItems2[currentLine2-1].z2 * scale);
+        y1 = (canvas.height / 2) - (lineItems2[currentLine2-1].x1 * scale);
+        y2 = (canvas.height / 2) - (lineItems2[currentLine2-1].x2 * scale);
+
+        ctx2.beginPath();
+        ctx2.lineWidth = 1;
+        ctx2.strokeStyle = 'red';
+        ctx2.moveTo(x1, y1);
+        ctx2.lineTo(x2, y2);
+        ctx2.stroke();
+
+        ctx2.beginPath();
+        ctx2.arc(x2, y2, 5, 0, 2 * Math.PI);
+        ctx2.strokeStyle = 'white'; 
+        ctx2.lineWidth = 1;
+        ctx2.stroke();
+
+        break;
+      default:
+        canvas = canvasRef1.current;
+        break;
+    }
+  };
+
   //~~~ EVENT HANDLING ~~~//
   //input changes, upload clicks, mouse and button interactions with output windows
 
   const handleInputInteraction = (event) => {
-    setInputText(event.target.value)
+    setInputText(event.target.value);
   }
   const handleUpload = () => {
     setOutput1(outputFunction(inputText, 1));
@@ -412,28 +518,6 @@ function App() {
   const handleOutputInteraction1 = (event) => {
     setCurrentWindow(1);
     setCurrentLine1(event.target.value.substr(0, event.target.selectionStart).split("\n").length);
-    
-    /*
-    //set up canvas and coords
-    const canvas = document.getElementById("plot");
-    const ctx = canvas.getContext("2d");
-    const prevX = (canvas.width / 2) + (lineItems1[currentLine1-1].coordX );
-    const prevY = (canvas.height / 2) + (lineItems1[currentLine1-1].coordY );
-    const newX = (canvas.width / 2) + (lineItems1[currentLine1].coordX );
-    const newY = (canvas.height / 2) + (lineItems1[currentLine1].coordY );
-
-    
-    //start new path
-    ctx.clearRect(0,0,canvas.width, canvas.height)
-    ctx.beginPath();
-    ctx.lineWidth = 0.5;
-    ctx.strokeStyle = 'red';
-    ctx.moveTo(prevX, prevY);
-    ctx.lineTo(newX, newY);
-
-    //draw path
-    ctx.stroke();
-    */
   }
   const handleOutputInteraction2 = (event) => {
     setCurrentWindow(2);
@@ -452,9 +536,9 @@ function App() {
       </Container>
       
       <Container maxWidth={false} disableGutters sx={{ bgcolor: 'lightsteel', height: 'calc(100vh - 80px)'}}>
-
         <Box display="flex" flexDirection={'row'} justifyContent={'center'} height={'100%'}>
-          <Box display="flex" flexDirection={'column'} height={'100%'} width={'25%'}>
+          
+          <Box display="flex" flexDirection = {'column'} height={'100%'} width={'20%'}>
             <InputBox
               text = {inputText}
               handleChange = {handleInputInteraction}
@@ -466,115 +550,113 @@ function App() {
               UPLOAD
             </Button>
           </Box>
-          <Box display="flex" flexDirection={'column'} height={'100%'} width={'75%'}>
-            
-            <Box display="flex" flexDirection={'row'} height={'75%'} width={'100%'}>
-            <Box position="relative" height={'100%'} width={'100%'}>
-              <canvas id="plot1"/>
-              <div className="card">
-                <Card sx={{width: '15vh', minWidth: 125, height: 'calc(75vh - 62px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
-                  <CardContent>
-                    <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
-                    $1
-                    </Typography>
-                    <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
-                    <br />
-                    X {lineItems1[currentLine1-1].x2.toFixed(4).padStart(8, ' ')}<br />
-                    Y {lineItems1[currentLine1-1].y2.toFixed(4).padStart(8, ' ')}<br />
-                    Z {lineItems1[currentLine1-1].z2.toFixed(4).padStart(8, ' ')}<br />
-                    <br />
-                    </Typography>
-                    <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
-                    N{lineItems1[currentLine1-1].op.toString().padStart(4, ' ')}<br />
-                    T{lineItems1[currentLine1-1].tool.toString().padStart(4, ' ')}<br />
-                    <br />
-                    </Typography>
-                    <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
-                    M
-                    {lineItems1[currentLine1-1].codeMB.toString().padStart(4, ' ')}<br />
-                    {lineItems1[currentLine1-1].codeMC}<br />
-                    <br />
-                    </Typography>
-                    <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
-                    G
-                    {lineItems1[currentLine1-1].codeGA.toString().padStart(4, ' ')}<br />
-                    {lineItems1[currentLine1-1].codeGB}<br />
-                    {lineItems1[currentLine1-1].codeGC}<br />
-                    {lineItems1[currentLine1-1].codeGD}<br />
-                    {lineItems1[currentLine1-1].codeGF}<br />
-                    {lineItems1[currentLine1-1].codeGH}<br />
-                    {lineItems1[currentLine1-1].codeGI}<br />
-                    {lineItems1[currentLine1-1].codeGJ}<br />
-                    {lineItems1[currentLine1-1].codeGK}<br />
-                    {lineItems1[currentLine1-1].codeGL}<br />
-                    {lineItems1[currentLine1-1].codeGM}<br />
-                    {lineItems1[currentLine1-1].codeGN}<br />
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </div>
-              </Box>
 
-              <Box position="relative" height={'100%'} width={'100%'}>
-              <canvas id="plot2"/>
-              <div className="card">
-                <Card sx={{width: '15vh', minWidth: 125, height: 'calc(75vh - 62px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
-                  <CardContent>
-                    <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
-                    $2
-                    </Typography>
-                    <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
-                    <br />
-                    X {lineItems2[currentLine2-1].x2.toFixed(4).padStart(8, ' ')}<br />
-                    Y {lineItems2[currentLine2-1].y2.toFixed(4).padStart(8, ' ')}<br />
-                    Z {lineItems2[currentLine2-1].z2.toFixed(4).padStart(8, ' ')}<br />
-                    <br />
-                    </Typography>
-                    <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
-                    N{lineItems2[currentLine2-1].op.toString().padStart(4, ' ')}<br />
-                    T{lineItems2[currentLine2-1].tool.toString().padStart(4, ' ')}<br />
-                    <br />
-                    </Typography>
-                    <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
-                    M{lineItems2[currentLine2-1].codeMB.toString().padStart(4, ' ')}<br />
-                    {lineItems2[currentLine2-1].codeMC}<br />
-                    <br />
-                    </Typography>
-                    <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
-                    G{lineItems2[currentLine2-1].codeGA.toString().padStart(4, ' ')}<br />
-                    {lineItems2[currentLine2-1].codeGB}<br />
-                    {lineItems2[currentLine2-1].codeGC}<br />
-                    {lineItems2[currentLine2-1].codeGD}<br />
-                    {lineItems2[currentLine2-1].codeGF}<br />
-                    {lineItems2[currentLine2-1].codeGH}<br />
-                    {lineItems2[currentLine2-1].codeGI}<br />
-                    {lineItems2[currentLine2-1].codeGJ}<br />
-                    {lineItems2[currentLine2-1].codeGK}<br />
-                    {lineItems2[currentLine2-1].codeGL}<br />
-                    {lineItems2[currentLine2-1].codeGM}<br />
-                    {lineItems2[currentLine2-1].codeGN}<br />
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </div>
-            </Box>
-            </Box>
-
-            <Box display="flex" flexDirection={'row'} height={'25%'} width={'100%'}>
-              <OutputBox
-                $={1}
-                text={output1}
-                handleMouseClick={handleOutputInteraction1}
-                handleKeyPress={handleOutputInteraction1}
-              />
-              <OutputBox
-                $={2}
-                text={output2}
-                handleMouseClick={handleOutputInteraction2}
-                handleKeyPress={handleOutputInteraction2}
-              />
-            </Box>
+          <Box position="relative" display="flex" flexDirection={'column'} height={'100%'} width={'40%'}>
+              
+            <OutputBox
+              $={1}
+              text={output1}
+              myRef={canvasRef1}
+              handleMouseClick={handleOutputInteraction1}
+              handleKeyPress={handleOutputInteraction1}
+            />
+              
+            <div className="card">
+            <Card sx={{width: '15vh', minWidth: 125, height: 'calc(70vh - 58px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
+              <CardContent>
+                <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
+                  $1
+                </Typography>
+                <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
+                  <br />
+                  X {lineItems1[currentLine1-1].x2.toFixed(4).padStart(8, ' ')}<br />
+                  Y {lineItems1[currentLine1-1].y2.toFixed(4).padStart(8, ' ')}<br />
+                  Z {lineItems1[currentLine1-1].z2.toFixed(4).padStart(8, ' ')}<br />
+                  <br />
+                </Typography>
+                <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
+                  N{lineItems1[currentLine1-1].op.toString().padStart(4, ' ')}<br />
+                  T{lineItems1[currentLine1-1].tool.toString().padStart(4, ' ')}<br />
+                  <br />
+                </Typography>
+                <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
+                  M
+                  {lineItems1[currentLine1-1].codeMB.toString().padStart(4, ' ')}<br />
+                  {lineItems1[currentLine1-1].codeMC}<br />
+                  <br />
+                </Typography>
+                <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
+                  G
+                  {lineItems1[currentLine1-1].codeGA.toString().padStart(4, ' ')}<br />
+                  {lineItems1[currentLine1-1].codeGB}<br />
+                  {lineItems1[currentLine1-1].codeGC}<br />
+                  {lineItems1[currentLine1-1].codeGD}<br />
+                  {lineItems1[currentLine1-1].codeGF}<br />
+                  {lineItems1[currentLine1-1].codeGH}<br />
+                  {lineItems1[currentLine1-1].codeGI}<br />
+                  {lineItems1[currentLine1-1].codeGJ}<br />
+                  {lineItems1[currentLine1-1].codeGK}<br />
+                  {lineItems1[currentLine1-1].codeGL}<br />
+                  {lineItems1[currentLine1-1].codeGM}<br />
+                  {lineItems1[currentLine1-1].codeGN}<br />
+                </Typography>
+              </CardContent>
+            </Card>
+            </div>  
           </Box>
+          
+          <Box position="relative" height={'100%'} width={'40%'}>
+              
+            <OutputBox
+              $={2}
+              text={output2}
+              myRef={canvasRef2}
+              handleMouseClick={handleOutputInteraction2}
+              handleKeyPress={handleOutputInteraction2}
+            />
+
+            <div className="card">
+            <Card sx={{width: '15vh', minWidth: 125, height: 'calc(70vh - 58px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
+              <CardContent>
+                <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
+                  $2
+                </Typography>
+                <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
+                  <br />
+                  X {lineItems2[currentLine2-1].x2.toFixed(4).padStart(8, ' ')}<br />
+                  Y {lineItems2[currentLine2-1].y2.toFixed(4).padStart(8, ' ')}<br />
+                  Z {lineItems2[currentLine2-1].z2.toFixed(4).padStart(8, ' ')}<br />
+                  <br />
+                </Typography>
+                <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
+                  N{lineItems2[currentLine2-1].op.toString().padStart(4, ' ')}<br />
+                  T{lineItems2[currentLine2-1].tool.toString().padStart(4, ' ')}<br />
+                  <br />
+                </Typography>
+                <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
+                  M{lineItems2[currentLine2-1].codeMB.toString().padStart(4, ' ')}<br />
+                  {lineItems2[currentLine2-1].codeMC}<br />
+                  <br />
+                </Typography>
+                <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
+                  G{lineItems2[currentLine2-1].codeGA.toString().padStart(4, ' ')}<br />
+                  {lineItems2[currentLine2-1].codeGB}<br />
+                  {lineItems2[currentLine2-1].codeGC}<br />
+                  {lineItems2[currentLine2-1].codeGD}<br />
+                  {lineItems2[currentLine2-1].codeGF}<br />
+                  {lineItems2[currentLine2-1].codeGH}<br />
+                  {lineItems2[currentLine2-1].codeGI}<br />
+                  {lineItems2[currentLine2-1].codeGJ}<br />
+                  {lineItems2[currentLine2-1].codeGK}<br />
+                  {lineItems2[currentLine2-1].codeGL}<br />
+                  {lineItems2[currentLine2-1].codeGM}<br />
+                  {lineItems2[currentLine2-1].codeGN}<br />
+                </Typography>
+              </CardContent>
+            </Card>
+            </div>
+          </Box>
+          
         </Box>
       </Container>
 
