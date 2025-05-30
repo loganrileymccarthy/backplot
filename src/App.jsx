@@ -22,6 +22,8 @@ function App() {
   const [currentWindow, setCurrentWindow] = useState(0);
   const [currentLine1, setCurrentLine1] = useState(1);
   const [currentLine2, setCurrentLine2] = useState(1);
+  const currentView1 = 1; //make these useState later with button select
+  const currentView2 = 1;
   
   //~~~ INITIALIZE USEREF ~~~//
   //for referencing canvases to draw on
@@ -409,9 +411,12 @@ function App() {
   //called when user interacts with output text
   const drawFunction = ($) => {
     
-    let canvas, x1, x2, y1, y2;
+    let canvas, ctx;
+    let current = {};
+    let coords = {};
     let scale = 100;
 
+    //draw background
     const drawGrid = (canvas, context, spacing) => {
       context.clearRect(0,0,canvas.width, canvas.height);
       context.strokeStyle = 'lightgray';
@@ -443,62 +448,150 @@ function App() {
       }
     }
 
+    //take start and end positions from line, calculate canvas coords
+    const setCoords = (obj, view, canvas, scale) => {
+      var newCoords = {};
+
+      switch (view) {
+        case 1:   //zx view
+          newCoords.x1 = ((canvas.width / 2) + (obj.z1 * scale));
+          newCoords.x2 = ((canvas.width / 2) + (obj.z2 * scale));
+          newCoords.y1 = ((canvas.height / 2) - (obj.x1 * scale));
+          newCoords.y2 = ((canvas.height / 2) - (obj.x2 * scale));
+          break;
+        default:  //xy view
+          newCoords.x1 = ((canvas.width / 2) + (obj.x1 * scale));
+          newCoords.x2 = ((canvas.width / 2) + (obj.x2 * scale));
+          newCoords.y1 = ((canvas.height / 2) - (obj.y1 * scale));
+          newCoords.y2 = ((canvas.height / 2) - (obj.y1 * scale));
+          break;
+      }
+     
+      return newCoords;
+    }
+
+    //draw output up to current line in respective window
     switch($) {
       case 1:
 
         canvas = canvasRef1.current;
-        const ctx1 = canvas.getContext('2d');
+        ctx = canvas.getContext('2d');
         canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
         canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
-        drawGrid(canvas, ctx1, scale/4);
+        
+        drawGrid(canvas, ctx, scale/4);
+        
+        for (let n = currentLine1; n > 0; n--) {
+          current = lineItems1[currentLine1-n];
+          coords = setCoords(current, currentView1, canvas, scale);
+          
+          //which type of line is it
+          switch (current.codeGA) {
+          case 0:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'black';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          case 1:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'red';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          case 2:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'yellow';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          case 3:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'yellow';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          default:  //oddball codeGA
+            break;  //not drawing line
+          }
+        }
 
-        x1 = (canvas.width / 2) + (lineItems1[currentLine1-1].z1 * scale);
-        x2 = (canvas.width / 2) + (lineItems1[currentLine1-1].z2 * scale);
-        y1 = (canvas.height / 2) - (lineItems1[currentLine1-1].x1 * scale);
-        y2 = (canvas.height / 2) - (lineItems1[currentLine1-1].x2 * scale);
-
-        ctx1.beginPath();
-        ctx1.lineWidth = 1;
-        ctx1.strokeStyle = 'red';
-        ctx1.moveTo(x1, y1);
-        ctx1.lineTo(x2, y2);
-        ctx1.stroke();
-
-        ctx1.beginPath();
-        ctx1.arc(x2, y2, 5, 0, 2 * Math.PI);
-        ctx1.strokeStyle = 'white'; 
-        ctx1.lineWidth = 1;
-        ctx1.stroke();
-
+        //crosshair
+        ctx.beginPath();
+        ctx.arc(coords.x2, coords.y2, 5, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
         break;
       case 2:
 
         canvas = canvasRef2.current;
-        const ctx2 = canvas.getContext('2d');
+        ctx = canvas.getContext('2d');
         canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
         canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
-        drawGrid(canvas, ctx2, scale/4);
+        
+        drawGrid(canvas, ctx, scale/4);
 
-        x1 =(canvas.width / 2) + (lineItems2[currentLine2-1].z1 * scale);
-        x2 = (canvas.width / 2) + (lineItems2[currentLine2-1].z2 * scale);
-        y1 = (canvas.height / 2) - (lineItems2[currentLine2-1].x1 * scale);
-        y2 = (canvas.height / 2) - (lineItems2[currentLine2-1].x2 * scale);
+        for (let n = currentLine2; n > 0; n--) {
+          current = lineItems2[currentLine2-n];
+          coords = setCoords(current, currentView2, canvas, scale);
+          
+          //which type of line is it
+          switch (current.codeGA) {
+          case 0:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'black';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          case 1:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'red';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          case 2:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'yellow';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          case 3:
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'yellow';
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.stroke();
+            break;
+          default:  //oddball codeGA
+            break;  //not drawing line
+          }
+        }
 
-        ctx2.beginPath();
-        ctx2.lineWidth = 1;
-        ctx2.strokeStyle = 'red';
-        ctx2.moveTo(x1, y1);
-        ctx2.lineTo(x2, y2);
-        ctx2.stroke();
-
-        ctx2.beginPath();
-        ctx2.arc(x2, y2, 5, 0, 2 * Math.PI);
-        ctx2.strokeStyle = 'white'; 
-        ctx2.lineWidth = 1;
-        ctx2.stroke();
+        ctx.beginPath();
+        ctx.arc(coords.x2, coords.y2, 5, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'white'; 
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
         break;
-      default:
+      default:  //draw function called with no $
         canvas = canvasRef1.current;
         break;
     }
