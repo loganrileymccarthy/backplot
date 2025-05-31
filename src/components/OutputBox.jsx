@@ -28,6 +28,5 @@ export default function OutputBox({$=1, text='', handleMouseClick, handleKeyPres
       </Box>
 
       </>
-    //</Box>
   )
 }
