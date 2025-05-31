@@ -1,17 +1,32 @@
 (SAMPLE G CODE FILE)
 $1
 
-(test expressions)
+(test views)
 G0 G18
 X1
 Z1
 X0
 Z0
-
 G2 Z1 X1 K1
-
 G1 Z0 X0
 
+G0 G17
+Y1
+X1
+Y0
+X0
+G2 X1 Y1 i1
+G1 X0 Y0
+
+G0 G19
+Y1
+Z1
+Y0
+Z0
+G2 Z1 Y1 K1
+G1 Z0 Y0
+
+(test expressions)
 G0
 X1
 X-1

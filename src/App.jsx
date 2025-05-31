@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {Box, Container, Button, Card, CardContent, CardMedia, CardActionArea, Typography, Slider} from "@mui/material";
+import {Box, Container, Button, Card, CardContent, CardMedia, CardActionArea, Typography, Slider, ButtonGroup} from "@mui/material";
 import { create, all} from 'mathjs';
 
 import './App.css';
@@ -7,6 +7,8 @@ import Title from './components/Title';
 import Footer from './components/Footer';
 import InputBox from './components/InputBox';
 import OutputBox from './components/OutputBox';
+import ViewButtons from './components/ViewButtons';
+import ScaleSlider from './components/ScaleSlider';
 
 
 function App() {
@@ -27,13 +29,13 @@ function App() {
     codeMB:'', codeMC:'', codeMD:'', 
     codeGA:'', codeGB:'', codeGC:'', codeGD:'', codeGE:'', codeGF:'', codeGG:'', codeGH:'', 
     codeGI:'', codeGJ:'', codeGK:'', codeGL:'', codeGM:'', codeGN:'', codeGO:''}]);
-  const [currentWindow, setCurrentWindow] = useState(0);
   const [currentLine1, setCurrentLine1] = useState(1);
   const [currentLine2, setCurrentLine2] = useState(1);
+  const [currentWindow, setCurrentWindow] = useState(0);
+  const [currentView1, setCurrentView1] = useState(1);
+  const [currentView2, setCurrentView2] = useState(1);
   const [scale1, setScale1] = useState(100);
   const [scale2, setScale2] = useState(100);
-  const currentView1 = 1; //make these useState later with button select
-  const currentView2 = 1;
   
   //~~~ INITIALIZE USEREF ~~~//
   //for referencing canvases to draw on
@@ -41,11 +43,14 @@ function App() {
   const canvasRef2 = useRef(null);
 
   //~~~ INITIALIZE USEEFFECT ~~~//
-  //for drawing based on currentLine change
+  //for drawing based on change
   useEffect(() => {drawFunction(1);}, [currentLine1]);
   useEffect(() => {drawFunction(2);}, [currentLine2]);
+  useEffect(() => {drawFunction(1);}, [currentView1]);
+  useEffect(() => {drawFunction(2);}, [currentView2]);
   useEffect(() => {drawFunction(1);}, [scale1]);
   useEffect(() => {drawFunction(2);}, [scale2]);
+  
 
   //~~~ INITIALIZE MATHJS INSTANCE ~~~//
   //for evaluating expressions
@@ -479,20 +484,22 @@ function App() {
       var newCoords = {};
 
       switch (view) {
-        case 1:   //zx view
-          newCoords.x1 = (canvas.width / 2) + (lineObj.z1 * scale);
-          newCoords.x2 = (canvas.width / 2) + (lineObj.z2 * scale);
-          newCoords.y1 = (canvas.height / 2) - (lineObj.x1 * scale);
-          newCoords.y2 = (canvas.height / 2) - (lineObj.x2 * scale);
+        
+        case 1:   // ZX VIEW
+          newCoords.x1 = (canvas.width / 2) + /**/(lineObj.z1 * scale);
+          newCoords.x2 = (canvas.width / 2) + /**/(lineObj.z2 * scale);
+          newCoords.y1 = (canvas.height / 2) - /**/(lineObj.x1 * scale);
+          newCoords.y2 = (canvas.height / 2) - /**/(lineObj.x2 * scale);
           //will arc be seen?
           if (lineObj.codeGD == 18) {
             newCoords.isArc = true;
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
-              newCoords.centerX = newCoords.x1 + (lineObj.k * scale);
-              newCoords.centerY = newCoords.y1 - (lineObj.i * scale);
+              newCoords.centerX = newCoords.x1 + /**/(lineObj.k /**/* scale);
+              newCoords.centerY = newCoords.y1 - /**/(lineObj.i /**/* scale);
             }
             //find arc center from r
+            //NEEDS WORK, IS WRONG
             else if (lineObj.r != 0) {
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
@@ -502,10 +509,10 @@ function App() {
                 let h = H / 2;
                 let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
                 newCoords.centerX = newCoords.midX;
-                newCoords.centerY = newCoords.y1 - L;
+                newCoords.centerY = newCoords.y1 - /**/L;
               } else {
-                newCoords.centerX = newCoords.midX + ((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
-                newCoords.centerY = newCoords.midY - (((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                newCoords.centerX = newCoords.midX + /**/((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                newCoords.centerY = newCoords.midY - /**/(((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
               }
             }
           }
@@ -513,20 +520,21 @@ function App() {
           else newCoords.isArc = false;
           break;
         
-          default:  //xy view
-          newCoords.x1 = (canvas.width / 2) + (lineObj.x1 * scale);
-          newCoords.x2 = (canvas.width / 2) + (lineObj.x2 * scale);
-          newCoords.y1 = (canvas.height / 2) - (lineObj.y1 * scale);
-          newCoords.y2 = (canvas.height / 2) - (lineObj.y2 * scale);
+        case 2: // ZY VIEW
+          newCoords.x1 = (canvas.width / 2) + /**/(lineObj.z1 * scale);
+          newCoords.x2 = (canvas.width / 2) + /**/(lineObj.z2 * scale);
+          newCoords.y1 = (canvas.height / 2) - /**/(lineObj.y1 * scale);
+          newCoords.y2 = (canvas.height / 2) - /**/(lineObj.y2 * scale);
           //will arc be seen?
-          if (lineObj.codeGD == 17) {
+          if (lineObj.codeGD == 19) {
             newCoords.isArc = true;
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
-              newCoords.centerX = newCoords.x1 + (lineObj.k * scale);
-              newCoords.centerY = newCoords.y1 - (lineObj.i * scale);
+              newCoords.centerX = newCoords.x1 + /**/(lineObj.k /**/* scale);
+              newCoords.centerY = newCoords.y1 - /**/(lineObj.j /**/* scale);
             }
             //find arc center from r
+            //NEEDS WORK, IS WRONG
             else if (lineObj.r != 0) {
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
@@ -536,15 +544,53 @@ function App() {
                 let h = H / 2;
                 let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
                 newCoords.centerX = newCoords.midX;
-                newCoords.centerY = newCoords.y1 - L;
+                newCoords.centerY = newCoords.y1 - /**/L;
               } else {
-                newCoords.centerX = newCoords.midX + ((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
-                newCoords.centerY = newCoords.midY - (((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                newCoords.centerX = newCoords.midX + /**/((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                newCoords.centerY = newCoords.midY - /**/(((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
               }
             }
           }
           //arc won't be seen
           else newCoords.isArc = false;
+          break;
+
+        case 3:  // XY VIEW
+          newCoords.x1 = (canvas.width / 2) + /**/(lineObj.x1 * scale);
+          newCoords.x2 = (canvas.width / 2) + /**/(lineObj.x2 * scale);
+          newCoords.y1 = (canvas.height / 2) - /**/(lineObj.y1 * scale);
+          newCoords.y2 = (canvas.height / 2) - /**/(lineObj.y2 * scale);
+          //will arc be seen?
+          if (lineObj.codeGD == 17) {
+            newCoords.isArc = true;
+            //find arc center from ijk
+            if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
+              newCoords.centerX = newCoords.x1 + /**/(lineObj.i /**/* scale);
+              newCoords.centerY = newCoords.y1 - /**/(lineObj.j /**/* scale);
+            }
+            //find arc center from r
+            //NEEDS WORK, IS WRONG
+            else if (lineObj.r != 0) {
+              newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
+              newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
+              newCoords.slope = (newCoords.x1 - newCoords.x2) / (newCoords.y1 - newCoords.y2);
+              if (newCoords.y1 == newCoords.y2) {
+                let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
+                let h = H / 2;
+                let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
+                newCoords.centerX = newCoords.midX;
+                newCoords.centerY = newCoords.y1 - /**/L;
+              } else {
+                newCoords.centerX = newCoords.midX + /**/((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                newCoords.centerY = newCoords.midY - /**/(((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+              }
+            }
+          }
+          //arc won't be seen
+          else newCoords.isArc = false;
+          break;
+          
+        default:
           break;
       }
       return newCoords;
@@ -722,12 +768,17 @@ function App() {
     setCurrentWindow(2);
     setCurrentLine2(event.target.value.substr(0, event.target.selectionStart).split("\n").length);
   }
-  const handleSlide1 = (event) => {
-    setScale1(event.target.value);
-  }
-  const handleSlide2 = (event) => {
-    setScale2(event.target.value);
-  }
+  const handleSlide1 = (event) => {setScale1(event.target.value);}
+  const handleSlide2 = (event) => {setScale2(event.target.value);}
+
+  const handleView1A = () => {setCurrentView1(1);}
+  const handleView1B = () => {setCurrentView1(2);}
+  const handleView1C = () => {setCurrentView1(3);}
+
+  const handleView2A = () => {setCurrentView2(1);}
+  const handleView2B = () => {setCurrentView2(2);}
+  const handleView2C = () => {setCurrentView2(3);}
+  
   //~~~ BUILD PAGE ~~~//
 
   return (
@@ -743,36 +794,28 @@ function App() {
         <Box display="flex" flexDirection={'row'} justifyContent={'center'} height={'100%'}>
           
           <Box display="flex" flexDirection = {'column'} height={'100%'} width={'20%'}>
-            <InputBox
-              text = {inputText}
-              handleChange = {handleInputInteraction}
-            />
-            <Button 
-              variant='contained'
-              color='primary'
-              onClick = {handleUpload}>
-              UPLOAD
-            </Button>
+            <InputBox text = {inputText} handleChange = {handleInputInteraction}/>
+            <Button variant='contained' color='primary' onClick = {handleUpload}>UPLOAD</Button>
           </Box>
 
           <Box position="relative" display="flex" flexDirection={'column'} height={'100%'} width={'40%'}>
               
-            <OutputBox
-              $={1}
-              text={output1}
-              myRef={canvasRef1}
+            <OutputBox $={1} text={output1} myRef={canvasRef1}
               handleMouseClick={handleOutputInteraction1}
               handleKeyPress={handleOutputInteraction1}
             />
               
             <div className="card">
             
-            <Card sx={{width: '15vh', minWidth: 125, height: 'calc(70vh - 58px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
+            <Card sx={{width: '15vh', minWidth: 125, height: 'calc(70vh - 88px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
               <CardContent>
+                
                 <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
                   $1
                 </Typography>
-                <Slider size='small' color='secondary' min={10} max={1000} defaultValue={100} onChange={handleSlide1}/>
+                
+                <ScaleSlider handleChange={handleSlide1}/>
+                
                 <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
                   <br />
                   X {lineItems1[currentLine1-1].x2.toFixed(4).padStart(8, ' ')}<br />
@@ -780,17 +823,20 @@ function App() {
                   Z {lineItems1[currentLine1-1].z2.toFixed(4).padStart(8, ' ')}<br />
                   <br />
                 </Typography>
+                
                 <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
                   N{lineItems1[currentLine1-1].op.toString().padStart(4, ' ')}<br />
                   T{lineItems1[currentLine1-1].tool.toString().padStart(4, ' ')}<br />
                   <br />
                 </Typography>
+                
                 <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
                   M
                   {lineItems1[currentLine1-1].codeMB.toString().padStart(4, ' ')}<br />
                   {lineItems1[currentLine1-1].codeMC}<br />
                   <br />
                 </Typography>
+                
                 <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
                   G
                   {lineItems1[currentLine1-1].codeGA.toString().padStart(4, ' ')}<br />
@@ -808,26 +854,32 @@ function App() {
                 </Typography>
               </CardContent>
             </Card>
+            
+            <ViewButtons
+              click1={handleView1A}
+              click2={handleView1B}
+              click3={handleView1C}
+            />
             </div>  
           </Box>
           
           <Box position="relative" height={'100%'} width={'40%'}>
               
-            <OutputBox
-              $={2}
-              text={output2}
-              myRef={canvasRef2}
+            <OutputBox $={2} text={output2} myRef={canvasRef2}
               handleMouseClick={handleOutputInteraction2}
               handleKeyPress={handleOutputInteraction2}
             />
 
             <div className="card" justifyContent="center" >
-            <Card sx={{width: '15vh', minWidth: 125, height: 'calc(70vh - 58px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
+            <Card sx={{width: '15vh', minWidth: 125, height: 'calc(70vh - 88px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
               <CardContent>
+                
                 <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
                   $2
                 </Typography>
-                <Slider size='small' color='secondary' min={10} max={1000} defaultValue={100} onChange={handleSlide2}/>
+                
+                <ScaleSlider handleChange={handleSlide2}/>
+                
                 <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
                   <br />
                   X {lineItems2[currentLine2-1].x2.toFixed(4).padStart(8, ' ')}<br />
@@ -835,16 +887,19 @@ function App() {
                   Z {lineItems2[currentLine2-1].z2.toFixed(4).padStart(8, ' ')}<br />
                   <br />
                 </Typography>
+                
                 <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
                   N{lineItems2[currentLine2-1].op.toString().padStart(4, ' ')}<br />
                   T{lineItems2[currentLine2-1].tool.toString().padStart(4, ' ')}<br />
                   <br />
                 </Typography>
+                
                 <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
                   M{lineItems2[currentLine2-1].codeMB.toString().padStart(4, ' ')}<br />
                   {lineItems2[currentLine2-1].codeMC}<br />
                   <br />
                 </Typography>
+                
                 <Typography variant='inherit' color='darkblue' fontSize={14} textAlign='right'>
                   G{lineItems2[currentLine2-1].codeGA.toString().padStart(4, ' ')}<br />
                   {lineItems2[currentLine2-1].codeGB}<br />
@@ -859,10 +914,15 @@ function App() {
                   {lineItems2[currentLine2-1].codeGM}<br />
                   {lineItems2[currentLine2-1].codeGN}<br />
                 </Typography>
-                
               </CardContent>
             </Card>
-            </div>
+            
+            <ViewButtons
+              click1={handleView2A}
+              click2={handleView2B}
+              click3={handleView2C}
+            />
+            </div> 
           </Box>
           
         </Box>
