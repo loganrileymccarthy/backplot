@@ -772,7 +772,7 @@ function App() {
                 <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
                   $1
                 </Typography>
-                <Slider size="small" min={10} max={1000} defaultValue={100} onChange={handleSlide1}/>
+                <Slider size='small' color='secondary' min={10} max={1000} defaultValue={100} onChange={handleSlide1}/>
                 <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
                   <br />
                   X {lineItems1[currentLine1-1].x2.toFixed(4).padStart(8, ' ')}<br />
@@ -827,7 +827,7 @@ function App() {
                 <Typography gutterBottom variant='inherit' fontSize={20} fontWeight={900} textAlign='right'>
                   $2
                 </Typography>
-                <Slider size='small' min={10} max={1000} defaultValue={100} onChange={handleSlide2}/>
+                <Slider size='small' color='secondary' min={10} max={1000} defaultValue={100} onChange={handleSlide2}/>
                 <Typography variant='inherit' color='yellow' fontSize={14} textAlign='right'>
                   <br />
                   X {lineItems2[currentLine2-1].x2.toFixed(4).padStart(8, ' ')}<br />
