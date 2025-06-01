@@ -21,14 +21,14 @@ function App() {
   const [output3, setOutput3] = useState();
   const [lineItems1, setLineItems1] = useState([{
     name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, i:0, j:0, k:0, r:0,
-    codeMB:'', codeMC:'', codeMD:'', 
+    codeMA:'', codeMB:'', codeMC:'', codeMD:'', 
     codeGA:'', codeGB:'', codeGC:'', codeGD:'', codeGE:'', codeGF:'', codeGG:'', codeGH:'', 
-    codeGI:'', codeGJ:'', codeGK:'', codeGL:'', codeGM:'', codeGN:'', codeGO:''}]);
+    codeGI:'', codeGJ:''}]);
   const [lineItems2, setLineItems2] = useState([{
     name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, i:0, j:0, k:0, r:0,
-    codeMB:'', codeMC:'', codeMD:'', 
+    codeMA:'', codeMB:'', codeMC:'', codeMD:'', 
     codeGA:'', codeGB:'', codeGC:'', codeGD:'', codeGE:'', codeGF:'', codeGG:'', codeGH:'', 
-    codeGI:'', codeGJ:'', codeGK:'', codeGL:'', codeGM:'', codeGN:'', codeGO:''}]);
+    codeGI:'', codeGJ:''}]);
   const [currentLine1, setCurrentLine1] = useState(1);
   const [currentLine2, setCurrentLine2] = useState(1);
   const [currentWindow, setCurrentWindow] = useState(0);
@@ -43,7 +43,7 @@ function App() {
   const canvasRef2 = useRef(null);
 
   //~~~ INITIALIZE USEEFFECT ~~~//
-  //for drawing based on change
+  //for drawing based on changes
   useEffect(() => {drawFunction(1);}, [currentLine1]);
   useEffect(() => {drawFunction(2);}, [currentLine2]);
   useEffect(() => {drawFunction(1);}, [currentView1]);
@@ -165,51 +165,56 @@ function App() {
       switch (letter) {
         case 'G':
           switch (num) {
-            case 0: case 1: case 2: case 3: case 33: case 38: case 73: case 76: case 80: case 81: case 82: case 84: case 85: case 86: case 87: case 88: case 89:
+            //motion
+            case 0: case 1: case 2: case 3: 
+            case 70: case 71: case 72: case 73: case 74:case 75: case 76: case 77: case 78: case 79: 
+            case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89:
               return 'A';
-            case 7: case 8:
-              return 'B';
+            //coords
             case 15: case 16:
-              return 'C';
+              return 'B';
+            //plane
             case 17: case 18: case 19: case 17.1: case 17.2: case 17.3:
-              return 'D';
+              return 'C';
+            //units
             case 20: case 21:
-              return 'E';
+              return 'D';
+            //comp
             case 40: case 41: case 42: case 41.1: case 41.2:
+              return 'E';
+            //work zone
+            case 54: case 55: case 56: case 57: case 58: case 59: 
+            case 59.1: case 59.2: case 59.3: case 59.4: case 59.5:
               return 'F';
-            case 43: case 43.1: case 49:
-              return 'G';
-            case 54: case 55: case 56: case 57: case 58: case 59: case 59.1: case 59.2: case 59.3:
-              return 'H';
-            case 61: case 61.1: case 64:
-              return 'I';
-            case 90: case 91:
-              return 'J';
-            case 90.1: case 91.1:
-              return 'K';
-            case 93: case 94: case 95:
-              return 'L';
+            //speed mode
             case 96: case 97:
-              return 'M';
+              return 'G';
+            //feed mode
             case 98: case 99:
-              return 'N';
-            case 115: case 116: case 149:
-              return 'O';
+              return 'H';
+            //start point mode
+            case 115: case 116:
+              return 'I';
+            //sync mode
+            case 600: case 610: case 620: case 630: case 640: case 650:
+              return 'J';
             default:
               return 'Z';
           }
         case 'M':
           switch (num) {
-            case 0: case 1: case 2: case 30: case 60:
-              return 'A';
+            //spindle 1
             case 3: case 4: case 5:
-              return 'B';
+              return 'A';
+            //spindle 2
             case 23: case 24: case 25:
+              return 'B';
+            //spindle 1 clamping
+            case 6: case 7:
               return 'C';
-            case 7: case 8: case 9:
+            //spindle 2 clamping
+            case 15: case 16:
               return 'D';
-            case 48: case 49:
-              return 'E';
             default:
               return 'Z';
           }
@@ -260,11 +265,12 @@ function App() {
       while (line.includes('M')) {
         let n = getFloatAfterChar(line, 'M');
         switch(codeFilter('M', n)) {
+          //if modal, update modal group
           case 'A': activeMA = n; break;
           case 'B': activeMB = n; break;
           case 'C': activeMC = n; break;
           case 'D': activeMD = n; break;
-          case 'E': activeME = n; break;
+          //if not part of modal group, add to output array
           default: arr.push('M' + n); break;
         }
         line = line.replace('M', '_');
@@ -272,6 +278,7 @@ function App() {
       while (line.includes('G')) {
         let n = getFloatAfterChar(line, 'G');
         switch(codeFilter('G', n)) {
+          //if modal, update modal group
           case 'A': activeGA = n; break;
           case 'B': activeGB = n; break;
           case 'C': activeGC = n; break;
@@ -282,11 +289,7 @@ function App() {
           case 'H': activeGH = n; break;
           case 'I': activeGI = n; break;
           case 'J': activeGJ = n; break;
-          case 'K': activeGK = n; break;
-          case 'L': activeGL = n; break;
-          case 'M': activeGM = n; break;
-          case 'N': activeGN = n; break;
-          case 'O': activeGO = n; break;
+          //if not part of modal group, add to output array
           default: arr.push('G' + n); break;
         }
         line = line.replace('G', '_');
@@ -297,22 +300,19 @@ function App() {
 
     //DECLARE GCODE VARIABLES AND MODAL STATES
     //set defaults here!!
-
+    
     var varArr = new Array(30000).fill(0);
-
     var activeT='', activeN='';
-    var activeMA='', activeMB='', activeMC='', activeMD='', activeME='';
-    var activeGA='', activeGB='', activeGC='', activeGD='', activeGE='', activeGF='', activeGG='', activeGH='', 
-        activeGI='', activeGJ='', activeGK='', activeGL='', activeGM='', activeGN='', activeGO='';
-
+    var activeMA='', activeMB='', activeMC='', activeMD='';
+    var activeGA='', activeGB='', activeGC='', activeGD='', activeGE='', activeGF='', activeGG='', activeGH='', activeGI='', activeGJ='';
     var currentX=0, currentY=0, currentZ=0;
-
     var activeI=0, activeJ=0, activeK=0, activeR=0;
 
     //PREPARE OUTPUT
     //preliminary scan for end variables
     //initialize objects for each line
-
+    
+    var n = 0;
     var output = '';
     var endVars = getVars(s);   //scan $0
 
@@ -339,8 +339,6 @@ function App() {
     //GENERATE OUTPUT
     //assign properties to each line object (coordinates, modal codes, etc.)
     //construct output text strings
-
-    var n = 0;
     o.forEach(object => {     
       
       n++;            
@@ -365,7 +363,6 @@ function App() {
       object.codeMB = activeMB;
       object.codeMC = activeMC;
       object.codeMD = activeMD;
-      object.codeME = activeME;
       object.codeGA = activeGA;
       object.codeGB = activeGB;
       object.codeGC = activeGC;
@@ -376,11 +373,6 @@ function App() {
       object.codeGH = activeGH;
       object.codeGI = activeGI;
       object.codeGJ = activeGJ;
-      object.codeGK = activeGK;
-      object.codeGL = activeGL;
-      object.codeGM = activeGM;
-      object.codeGN = activeGN;
-      object.codeGO = activeGO;
 
       object.i = activeI;
       object.j = activeJ;
@@ -388,36 +380,6 @@ function App() {
       object.r = activeR;
 
       output += object.id.toString().padStart(4, '0') + ' '; 
-      /*
-      output += "[X " + object.x2.toFixed(4) + ' ';
-      output += "Y " + object.y2.toFixed(4) + ' ';
-      output += "Z " + object.z2.toFixed(4) + "] ";
-      output += '\t';
-      
-      output += 'N' + object.op + ' ';
-      output += 'T' + object.tool + '\t';
-
-      output += 'M' + object.codeMA + ' ';
-      output += 'M' + object.codeMB + ' ';
-      output += 'M' + object.codeMC + ' ';
-      output += 'M' + object.codeMD + ' ';
-      output += 'G' + object.codeGA + ' ';
-      output += 'G' + object.codeGB + ' ';
-      output += 'G' + object.codeGC + ' ';
-      output += 'G' + object.codeGD + ' ';
-      output += 'G' + object.codeGE + ' ';
-      output += 'G' + object.codeGF + ' ';
-      output += 'G' + object.codeGG + ' ';
-      output += 'G' + object.codeGH + ' ';
-      output += 'G' + object.codeGI + ' ';
-      output += 'G' + object.codeGJ + ' ';
-      output += 'G' + object.codeGK + ' ';
-      output += 'G' + object.codeGL + ' ';
-      output += 'G' + object.codeGM + ' ';
-      output += object.codeArray + ' ';
-      output += '\t';
-      */
-
       output += object.name + ' ';
       output += '\n';
     });
@@ -435,8 +397,8 @@ function App() {
         break;
     }
 
-    if (s == '') {output = ''};   //handles blank input
-    output = output.slice(0,-1);  //deletes empty line at end
+    if (s == '') {output = ''};   //handle blank input
+    output = output.slice(0,-1);  //delete empty line at end
     return output;
   }
 
@@ -491,7 +453,7 @@ function App() {
           newCoords.y1 = (canvas.height / 2) - /**/(lineObj.x1 * scale);
           newCoords.y2 = (canvas.height / 2) - /**/(lineObj.x2 * scale);
           //will arc be seen?
-          if (lineObj.codeGD == 18) {
+          if (lineObj.codeGC == 18) {
             newCoords.isArc = true;
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
@@ -526,7 +488,7 @@ function App() {
           newCoords.y1 = (canvas.height / 2) - /**/(lineObj.y1 * scale);
           newCoords.y2 = (canvas.height / 2) - /**/(lineObj.y2 * scale);
           //will arc be seen?
-          if (lineObj.codeGD == 19) {
+          if (lineObj.codeGC == 19) {
             newCoords.isArc = true;
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
@@ -561,7 +523,7 @@ function App() {
           newCoords.y1 = (canvas.height / 2) - /**/(lineObj.y1 * scale);
           newCoords.y2 = (canvas.height / 2) - /**/(lineObj.y2 * scale);
           //will arc be seen?
-          if (lineObj.codeGD == 17) {
+          if (lineObj.codeGC == 17) {
             newCoords.isArc = true;
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
@@ -670,10 +632,9 @@ function App() {
       context.stroke();
     }
 
-
     //draw output in respective window
     switch($) {
-      case 1:
+      case 1: //$1
 
         canvas = canvasRef1.current;
         context = canvas.getContext('2d');
@@ -708,7 +669,7 @@ function App() {
         drawCrosshair(context, coords)
 
         break;
-      case 2:
+      case 2: //$2
 
         canvas = canvasRef2.current;
         context = canvas.getContext('2d');
@@ -832,8 +793,8 @@ function App() {
                 
                 <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
                   M
-                  {lineItems1[currentLine1-1].codeMB.toString().padStart(4, ' ')}<br />
-                  {lineItems1[currentLine1-1].codeMC}<br />
+                  {lineItems1[currentLine1-1].codeMA.toString().padStart(4, ' ')}<br />
+                  {lineItems1[currentLine1-1].codeMB}<br />
                   <br />
                 </Typography>
                 
@@ -843,14 +804,12 @@ function App() {
                   {lineItems1[currentLine1-1].codeGB}<br />
                   {lineItems1[currentLine1-1].codeGC}<br />
                   {lineItems1[currentLine1-1].codeGD}<br />
+                  {lineItems1[currentLine1-1].codeGE}<br />
                   {lineItems1[currentLine1-1].codeGF}<br />
+                  {lineItems1[currentLine1-1].codeGG}<br />
                   {lineItems1[currentLine1-1].codeGH}<br />
                   {lineItems1[currentLine1-1].codeGI}<br />
                   {lineItems1[currentLine1-1].codeGJ}<br />
-                  {lineItems1[currentLine1-1].codeGK}<br />
-                  {lineItems1[currentLine1-1].codeGL}<br />
-                  {lineItems1[currentLine1-1].codeGM}<br />
-                  {lineItems1[currentLine1-1].codeGN}<br />
                 </Typography>
               </CardContent>
             </Card>
@@ -870,7 +829,7 @@ function App() {
               handleKeyPress={handleOutputInteraction2}
             />
 
-            <div className="card" justifyContent="center" >
+            <div className="card">
             <Card sx={{width: '15vh', minWidth: 125, height: 'calc(70vh - 88px)', backgroundColor: 'rgba(50, 54, 73, 0.5)'}}>
               <CardContent>
                 
@@ -895,8 +854,8 @@ function App() {
                 </Typography>
                 
                 <Typography variant='inherit' color='indigo' fontSize={14} textAlign='right'>
-                  M{lineItems2[currentLine2-1].codeMB.toString().padStart(4, ' ')}<br />
-                  {lineItems2[currentLine2-1].codeMC}<br />
+                  M{lineItems2[currentLine2-1].codeMA.toString().padStart(4, ' ')}<br />
+                  {lineItems2[currentLine2-1].codeMB}<br />
                   <br />
                 </Typography>
                 
@@ -905,14 +864,12 @@ function App() {
                   {lineItems2[currentLine2-1].codeGB}<br />
                   {lineItems2[currentLine2-1].codeGC}<br />
                   {lineItems2[currentLine2-1].codeGD}<br />
+                  {lineItems2[currentLine2-1].codeGE}<br />
                   {lineItems2[currentLine2-1].codeGF}<br />
+                  {lineItems2[currentLine2-1].codeGG}<br />
                   {lineItems2[currentLine2-1].codeGH}<br />
                   {lineItems2[currentLine2-1].codeGI}<br />
                   {lineItems2[currentLine2-1].codeGJ}<br />
-                  {lineItems2[currentLine2-1].codeGK}<br />
-                  {lineItems2[currentLine2-1].codeGL}<br />
-                  {lineItems2[currentLine2-1].codeGM}<br />
-                  {lineItems2[currentLine2-1].codeGN}<br />
                 </Typography>
               </CardContent>
             </Card>

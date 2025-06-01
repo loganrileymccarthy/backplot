@@ -1,0 +1,7 @@
+correct views?
+canned cycles
+fix g2/g3 r
+tool toggling
+movable windows
+mouseover lines/points
+sub-plot for weird things

@@ -1,0 +1,158 @@
+=====================================
+-------------     G     -------------
+=====================================
+Group A
+Motion
+
+G00     rapid
+G01     linear
+G02     arc, cw
+G03     arc, ccw
+
+G70     finishing
+G71     roughing, dia
+G72     roughing, face
+G73     repeating pattern
+G74     grooving
+G75     grooving
+G76     threading
+G77
+G78
+G79     drilling, peck
+G80     cancel cycle
+G81     drilling
+G82     drilling, spot
+G83     drilling, peck
+G84     tapping
+G84.2   tapping, rigid
+G85
+G86
+G87
+G88
+G89
+-------------------------------------
+Group B
+Coords
+
+G15     cartesian
+G16     polar
+-------------------------------------
+Group C
+Plane
+
+G17
+G18
+G19
+G17.1
+G17.2
+G17.3
+-------------------------------------
+Group D
+Units
+
+G20     inch
+G21     mm
+-------------------------------------
+Group E
+Comp
+
+G40     cancel
+G41     left of path
+G42     right of path
+G41.1   dia override, left
+G42.1   dia override, right
+G41.2   3D, left
+G42.2   3D, right
+-------------------------------------
+Group F
+Work zone
+
+G54
+G55
+G56
+G57
+G58
+G59
+G59.1   
+G59.2
+G59.3
+-------------------------------------
+Group G
+Spindle speed
+
+G96     constant surface speed
+G97     constant spindle speed
+-------------------------------------
+Group H
+Feed mode
+
+G98     feed per minute
+G99     feed per revolution
+-------------------------------------
+Group I
+Start point
+
+G115    other system first
+G116    own system first
+-------------------------------------
+Group J
+Sync mode
+
+G600    front gang
+G610    front endworking
+G620    simultaneous inner/outer
+G630    simultaneous front/back
+G640    $3
+G650    pick-off
+-------------------------------------
+?????
+
+Rad/Dia?
+G07
+G08
+
+Exact Stop?
+G09
+G61
+G64
+
+=====================================
+-------------     M     -------------
+=====================================
+Group A
+Spindle 1
+
+M03     cw
+M04     ccw
+M05     off
+-------------------------------------
+Group B
+Spindle 2
+
+M23     cw
+M24     ccw
+M25     off
+M48
+-------------------------------------
+Group C
+Spindle 1 clamping
+
+M06     close
+M07     open
+-------------------------------------
+Group D
+Spindle 2 clamping
+
+M15     close
+M16     open
+-------------------------------------
+?????
+
+Coolant?
+MB
+
+Spindle 5?
+M180
+M181
+M182
+-------------------------------------
