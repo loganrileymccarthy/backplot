@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {Box, Container, Button, Card, CardContent, CardMedia, CardActionArea, Typography, Slider, ButtonGroup} from "@mui/material";
+import {Box, Container, Button, Card, CardContent, Typography} from "@mui/material";
 import { create, all} from 'mathjs';
 
 import './App.css';
@@ -414,9 +414,10 @@ function App() {
     const drawGrid = (canvas, context, spacing) => {
       context.clearRect(0,0,canvas.width, canvas.height);
       context.strokeStyle = 'lightgray';
+      
       context.lineWidth = 0.2;
       
-      for (let x = canvas.width/2; x <= canvas.width; x += spacing) {
+      for (let x = canvas.width / 2; x <= canvas.width; x += spacing) {
       context.beginPath();
       context.moveTo(x, 0);
       context.lineTo(x, canvas.height);
@@ -440,6 +441,107 @@ function App() {
       context.lineTo(canvas.width, y);
       context.stroke();
       }
+      
+      context.lineWidth = 0.5;
+
+      for (let x = canvas.width / 2; x <= canvas.width; x += spacing*10) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+      }
+      for (let x = canvas.width / 2; x >= 0; x -= spacing*10) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+      }
+      for (let y = canvas.height / 2; y <= canvas.height; y += spacing*10) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
+      }
+      for (let y = canvas.height / 2; y >= 0; y -= spacing*10) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
+      }
+
+      
+
+    }
+    //draw axes label in bottom left
+    const drawGnomon = (canvas, context, view) => {
+      switch (view) {
+        case 1:
+          context.beginPath();
+          context.strokeStyle = 'blue';
+          context.lineWidth = 1;
+          context.moveTo(10, canvas.height-10);
+          context.lineTo(60, canvas.height-10);
+          context.moveTo(20, canvas.height-10);
+          context.lineTo(20, canvas.height-20);
+          context.stroke();
+          
+          context.beginPath();
+          context.strokeStyle = 'red';
+          context.lineWidth = 1;
+          context.moveTo(10, canvas.height-10);
+          context.lineTo(10, canvas.height-60);
+          context.moveTo(10, canvas.height-20);
+          context.lineTo(20, canvas.height-20);
+          context.stroke();
+          return;
+        case 2:
+          context.beginPath();
+          context.strokeStyle = 'blue';
+          context.lineWidth = 1;
+          context.moveTo(10, canvas.height-10);
+          context.lineTo(60, canvas.height-10);
+          context.moveTo(20, canvas.height-10);
+          context.lineTo(20, canvas.height-20);
+          context.stroke();
+          
+          context.beginPath();
+          context.strokeStyle = 'green';
+          context.lineWidth = 1;
+          context.moveTo(10, canvas.height-10);
+          context.lineTo(10, canvas.height-60);
+          context.moveTo(10, canvas.height-20);
+          context.lineTo(20, canvas.height-20);
+          context.stroke();
+          return;
+        case 3:
+          context.beginPath();
+          context.strokeStyle = 'red';
+          context.lineWidth = 1;
+          context.moveTo(10, canvas.height-10);
+          context.lineTo(60, canvas.height-10);
+          context.moveTo(20, canvas.height-10);
+          context.lineTo(20, canvas.height-20);
+          context.stroke();
+          
+          context.beginPath();
+          context.strokeStyle = 'green';
+          context.lineWidth = 1;
+          context.moveTo(10, canvas.height-10);
+          context.lineTo(10, canvas.height-60);
+          context.moveTo(10, canvas.height-20);
+          context.lineTo(20, canvas.height-20);
+          context.stroke();
+          return;
+        default:
+          return;
+      }
+      
+      
+      
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
     }
     //take start and end positions from line, calculate canvas coords
     const setCoords = (lineObj, view, canvas, scale) => {
@@ -448,33 +550,45 @@ function App() {
       switch (view) {
         
         case 1:   // ZX VIEW
-          newCoords.x1 = (canvas.width / 2) + /**/(lineObj.z1 * scale);
-          newCoords.x2 = (canvas.width / 2) + /**/(lineObj.z2 * scale);
-          newCoords.y1 = (canvas.height / 2) - /**/(lineObj.x1 * scale);
-          newCoords.y2 = (canvas.height / 2) - /**/(lineObj.x2 * scale);
+          newCoords.x1 = (canvas.width / 2) + (/**/lineObj.z1/**/ * scale);
+          newCoords.x2 = (canvas.width / 2) + (/**/lineObj.z2/**/ * scale);
+          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.x1/**/ * scale);
+          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.x2/**/ * scale);
+          
           //will arc be seen?
           if (lineObj.codeGC == 18) {
             newCoords.isArc = true;
+            
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
-              newCoords.centerX = newCoords.x1 + /**/(lineObj.k /**/* scale);
-              newCoords.centerY = newCoords.y1 - /**/(lineObj.i /**/* scale);
+              newCoords.centerX = newCoords.x1 + (/**/lineObj.k/**/* scale);
+              newCoords.centerY = newCoords.y1 - (/**/lineObj.i/**/* scale);
             }
             //find arc center from r
-            //NEEDS WORK, IS WRONG
+            //trickier, see below
             else if (lineObj.r != 0) {
+              
+              //1. start by finding edge lengths of triangle to center
+              let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
+              let h = H / 2;
+              let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
+              if (lineObj.codeGA == 3) L = -L;            //make g2 g3 opposite
+              if (newCoords.y2 > newCoords.y1) L = -L;    //choose same solution consistently
+
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
               newCoords.slope = (newCoords.x1 - newCoords.x2) / (newCoords.y1 - newCoords.y2);
+
+              //2. calculate coordinates of the two possible centerpoints
               if (newCoords.y1 == newCoords.y2) {
-                let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
-                let h = H / 2;
-                let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
+                if (newCoords.x1 > newCoords.x2) L = -L;
                 newCoords.centerX = newCoords.midX;
-                newCoords.centerY = newCoords.y1 - /**/L;
+                newCoords.centerY = newCoords.y1 + L;
               } else {
-                newCoords.centerX = newCoords.midX + /**/((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
-                newCoords.centerY = newCoords.midY - /**/(((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                let cos = 1 / Math.sqrt(1 + (newCoords.slope * newCoords.slope));
+                let sin = newCoords.slope / Math.sqrt(1 + (newCoords.slope * newCoords.slope));
+                newCoords.centerX = newCoords.midX + (L * cos);
+                newCoords.centerY = newCoords.midY - (L * sin);
               }
             }
           }
@@ -483,33 +597,43 @@ function App() {
           break;
         
         case 2: // ZY VIEW
-          newCoords.x1 = (canvas.width / 2) + /**/(lineObj.z1 * scale);
-          newCoords.x2 = (canvas.width / 2) + /**/(lineObj.z2 * scale);
-          newCoords.y1 = (canvas.height / 2) - /**/(lineObj.y1 * scale);
-          newCoords.y2 = (canvas.height / 2) - /**/(lineObj.y2 * scale);
+          newCoords.x1 = (canvas.width / 2) + (/**/lineObj.z1/**/ * scale);
+          newCoords.x2 = (canvas.width / 2) + (/**/lineObj.z2/**/ * scale);
+          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.y1/**/ * scale);
+          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.y2/**/ * scale);
           //will arc be seen?
           if (lineObj.codeGC == 19) {
             newCoords.isArc = true;
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
-              newCoords.centerX = newCoords.x1 + /**/(lineObj.k /**/* scale);
-              newCoords.centerY = newCoords.y1 - /**/(lineObj.j /**/* scale);
+              newCoords.centerX = newCoords.x1 + (/**/lineObj.k/**/* scale);
+              newCoords.centerY = newCoords.y1 - (/**/lineObj.j/**/* scale);
             }
             //find arc center from r
-            //NEEDS WORK, IS WRONG
+            //trickier, see below
             else if (lineObj.r != 0) {
+              
+              //1. start by finding edge lengths of triangle to center
+              let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
+              let h = H / 2;
+              let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
+              if (lineObj.codeGA == 3) L = -L;            //make g2 g3 opposite
+              if (newCoords.y2 > newCoords.y1) L = -L;    //choose same solution consistently
+
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
               newCoords.slope = (newCoords.x1 - newCoords.x2) / (newCoords.y1 - newCoords.y2);
+
+              //2. calculate coordinates of the two possible centerpoints
               if (newCoords.y1 == newCoords.y2) {
-                let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
-                let h = H / 2;
-                let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
+                if (newCoords.x1 > newCoords.x2) L = -L;
                 newCoords.centerX = newCoords.midX;
-                newCoords.centerY = newCoords.y1 - /**/L;
+                newCoords.centerY = newCoords.y1 + L;
               } else {
-                newCoords.centerX = newCoords.midX + /**/((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
-                newCoords.centerY = newCoords.midY - /**/(((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                let cos = 1 / Math.sqrt(1 + (newCoords.slope * newCoords.slope));
+                let sin = newCoords.slope / Math.sqrt(1 + (newCoords.slope * newCoords.slope));
+                newCoords.centerX = newCoords.midX + (L * cos);
+                newCoords.centerY = newCoords.midY - (L * sin);
               }
             }
           }
@@ -518,33 +642,43 @@ function App() {
           break;
 
         case 3:  // XY VIEW
-          newCoords.x1 = (canvas.width / 2) + /**/(lineObj.x1 * scale);
-          newCoords.x2 = (canvas.width / 2) + /**/(lineObj.x2 * scale);
-          newCoords.y1 = (canvas.height / 2) - /**/(lineObj.y1 * scale);
-          newCoords.y2 = (canvas.height / 2) - /**/(lineObj.y2 * scale);
+          newCoords.x1 = (canvas.width / 2) + (/**/lineObj.x1/**/ * scale);
+          newCoords.x2 = (canvas.width / 2) + (/**/lineObj.x2/**/ * scale);
+          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.y1/**/ * scale);
+          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.y2/**/ * scale);
           //will arc be seen?
           if (lineObj.codeGC == 17) {
             newCoords.isArc = true;
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
-              newCoords.centerX = newCoords.x1 + /**/(lineObj.i /**/* scale);
-              newCoords.centerY = newCoords.y1 - /**/(lineObj.j /**/* scale);
+              newCoords.centerX = newCoords.x1 + (/**/lineObj.i/**/* scale);
+              newCoords.centerY = newCoords.y1 - (/**/lineObj.j/**/* scale);
             }
             //find arc center from r
-            //NEEDS WORK, IS WRONG
+            //trickier, see below
             else if (lineObj.r != 0) {
+              
+              //1. start by finding edge lengths of triangle to center
+              let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
+              let h = H / 2;
+              let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
+              if (lineObj.codeGA == 3) L = -L;            //make g2 g3 opposite
+              if (newCoords.y2 > newCoords.y1) L = -L;    //choose same solution consistently
+
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
               newCoords.slope = (newCoords.x1 - newCoords.x2) / (newCoords.y1 - newCoords.y2);
+
+              //2. calculate coordinates of the two possible centerpoints
               if (newCoords.y1 == newCoords.y2) {
-                let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
-                let h = H / 2;
-                let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
+                if (newCoords.x1 > newCoords.x2) L = -L;
                 newCoords.centerX = newCoords.midX;
-                newCoords.centerY = newCoords.y1 - /**/L;
+                newCoords.centerY = newCoords.y1 + L;
               } else {
-                newCoords.centerX = newCoords.midX + /**/((lineObj.r*scale) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
-                newCoords.centerY = newCoords.midY - /**/(((lineObj.r*scale) * newCoords.slope) / Math.sqrt(1 + (newCoords.slope * newCoords.slope)));
+                let cos = 1 / Math.sqrt(1 + (newCoords.slope * newCoords.slope));
+                let sin = newCoords.slope / Math.sqrt(1 + (newCoords.slope * newCoords.slope));
+                newCoords.centerX = newCoords.midX + (L * cos);
+                newCoords.centerY = newCoords.midY - (L * sin);
               }
             }
           }
@@ -592,8 +726,14 @@ function App() {
       let radius = Math.abs(Math.sqrt(dX*dX + dY*dY));
       let startAngle = Math.atan2(dY, dX);
       let endAngle   = Math.atan2(coords.y2 - coords.centerY, coords.x2 - coords.centerX);
-      
-      context.beginPath();
+      /*
+      context.beginPath();  //label center 1
+      context.arc(coords.centerX, coords.centerY, 5, 0, 2 * Math.PI);
+      context.strokeStyle = 'purple';
+      context.lineWidth = 1;
+      context.stroke();
+      */
+      context.beginPath();  //draw arc
       context.lineWidth = 1;
       context.strokeStyle = 'yellow';
       context.arc(coords.centerX, coords.centerY, radius, startAngle, endAngle, false);
@@ -616,12 +756,19 @@ function App() {
       let radius = Math.abs(Math.sqrt(dX*dX + dY*dY));
       let startAngle = Math.atan2(dY, dX);
       let endAngle   = Math.atan2(coords.y1 - coords.centerY, coords.x1 - coords.centerX);
-      
+      /*
+      context.beginPath();  //label center 1
+      context.arc(coords.centerX, coords.centerY, 5, 0, 2 * Math.PI);
+      context.strokeStyle = 'purple';
+      context.lineWidth = 1;
+      context.stroke();
+      */
       context.beginPath();
       context.lineWidth = 1;
       context.strokeStyle = 'yellow';
       context.arc(coords.centerX, coords.centerY, radius, startAngle, endAngle, false);
       context.stroke();
+      
     }
     //draw crosshairs
     const drawCrosshair = (context, coords) => {
@@ -631,7 +778,7 @@ function App() {
       context.lineWidth = 1;
       context.stroke();
     }
-
+    
     //draw output in respective window
     switch($) {
       case 1: //$1
@@ -641,7 +788,8 @@ function App() {
         canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
         canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
         
-        drawGrid(canvas, context, scale1/4);
+        drawGrid(canvas, context, scale1/10);
+        drawGnomon(canvas, context, currentView1);
         
         for (let n = currentLine1; n > 0; n--) {
           current = lineItems1[currentLine1-n];
@@ -676,12 +824,13 @@ function App() {
         canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
         canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
       
-        drawGrid(canvas, context, scale2/4);
-      
+        drawGrid(canvas, context, scale2/10);
+        drawGnomon(canvas, context, currentView2);
+
         for (let n = currentLine2; n > 0; n--) {
           current = lineItems2[currentLine2-n];
           coords = setCoords(current, currentView2, canvas, scale2);
-        
+
           //which type of line is it
           switch (current.codeGA) {
           case 0:
