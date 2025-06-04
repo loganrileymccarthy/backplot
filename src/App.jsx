@@ -130,6 +130,21 @@ function App() {
       if (line.includes("IF")) line = '';
       if (line.includes("WHILE")) line = '';
       if (line.includes("M350")) line = '';
+      
+      //handle trig
+      line = line.replaceAll("ARCSIN", "%4");
+      line = line.replaceAll("ARCCOS", "%5");
+      line = line.replaceAll("ARCTAN", "%6");
+      line = line.replaceAll("ASIN", "%4");
+      line = line.replaceAll("ACOS", "%5");
+      line = line.replaceAll("ATAN", "%6");
+
+      line = line.replaceAll("SIN", "%1");
+      line = line.replaceAll("COS", "%2");
+      line = line.replaceAll("TAN", "%3");
+
+      //handle shorthand g2/g3 moves
+      line = line.replace(",R" , "R%");
 
       //handle all #
       while (line.includes('#')) {
@@ -142,7 +157,7 @@ function App() {
           
           //handle variables on right side of equals sign
           while (postEq.includes('#')) {
-            let var2Num = getNumberAfterChar(postEq, "#");
+            let var2Num = getNumberAfterChar(postEq, '#');
             let var2Text = '#' + var2Num.toString();
             postEq = postEq.replace(var2Text, varArr[var2Num].toString());
           }
@@ -225,10 +240,16 @@ function App() {
     function getCoord (line, char) {
       if (line.includes(char)) {
         let expr = getCharsUntilLetter(line.substring(line.indexOf(char)+1));
-        expr = expr.replace(',' , '');
-        expr = expr.replace('[' , '(');
-        expr = expr.replace(']' , ')');
-        
+        expr = expr.replaceAll(',' , '');
+        expr = expr.replaceAll('[' , '(');
+        expr = expr.replaceAll(']' , ')');
+        expr = expr.replaceAll('%1', 'sin');
+        expr = expr.replaceAll('%2', 'cos');
+        expr = expr.replaceAll('%3', 'tan');
+        expr = expr.replaceAll('%4', 'asin');
+        expr = expr.replaceAll('%5', 'acos');
+        expr = expr.replaceAll('%6', 'atan');
+
         let res = parseFloat(math.evaluate(expr));
 
         return (res);
