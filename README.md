@@ -4,11 +4,12 @@ Now a react js app running in browser!
 
 [Click here to launch site](https://loganrileymccarthy.github.io/backplot)  
 
-Or, to run locally:  
+Features:
++ Coordinates, current tool, g/m codes for each line
++ Z/X, Z/Y, X/Y views (spindle 1)
 
-+ Clone this repository (git clone http://github.com/loganrileymccarthy/backplot)
-+ Ensure node is installed on the computer (https://nodejs.org/en)
-+ Open the project in a terminal window and run:
-  - npm install
-  - npm run dev
-+ Follow the localhost link provided in the terminal window
+Coming soon:
++ More tool data
++ Differentiate tool paths by color
++ Accurate spindle 2 views
++ Movable plot
