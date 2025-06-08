@@ -12,7 +12,7 @@ import ScaleSlider from './components/ScaleSlider';
 
 
 function App() {
-  
+
   //~~~ INITIALIZE USESTATE ~~~//
   //for things that should change and cause the page to re-render
   const [inputText, setInputText] = useState();
@@ -20,12 +20,16 @@ function App() {
   const [output2, setOutput2] = useState();
   const [output3, setOutput3] = useState();
   const [lineItems1, setLineItems1] = useState([{
-    name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, i:0, j:0, k:0, r:0,
+    rawText:'', text:'',
+    x1:0, y1:0, z1:0, x2:0, y2:0, z2:0,
+    n:0, t:0, i:0, j:0, k:0, r:0,
     codeMA:'', codeMB:'', codeMC:'', codeMD:'', 
     codeGA:'', codeGB:'', codeGC:'', codeGD:'', codeGE:'', codeGF:'', codeGG:'', codeGH:'', 
     codeGI:'', codeGJ:''}]);
   const [lineItems2, setLineItems2] = useState([{
-    name:'', x1:0, y1:0, z1:0, x2:0, y2:0, z2:0, op:0, tool:0, i:0, j:0, k:0, r:0,
+    rawText:'', text:'',
+    x1:0, y1:0, z1:0, x2:0, y2:0, z2:0,
+    n:0, t:0, i:0, j:0, k:0, r:0,
     codeMA:'', codeMB:'', codeMC:'', codeMD:'', 
     codeGA:'', codeGB:'', codeGC:'', codeGD:'', codeGE:'', codeGF:'', codeGG:'', codeGH:'', 
     codeGI:'', codeGJ:''}]);
@@ -36,7 +40,7 @@ function App() {
   const [currentView2, setCurrentView2] = useState(1);
   const [scale1, setScale1] = useState(100);
   const [scale2, setScale2] = useState(100);
-  
+
   //~~~ INITIALIZE USEREF ~~~//
   //for referencing canvases to draw on
   const canvasRef1 = useRef(null);
@@ -50,20 +54,20 @@ function App() {
   useEffect(() => {drawFunction(2);}, [currentView2]);
   useEffect(() => {drawFunction(1);}, [scale1]);
   useEffect(() => {drawFunction(2);}, [scale2]);
-  
+
 
   //~~~ INITIALIZE MATHJS INSTANCE ~~~//
   //for evaluating expressions
   const math = create(all,  {});
 
-  //~~~ OUTPUT FUNCTION ~~~//
-  //called when user clicks upload
-  //set $ = which section to output
-  //no $ = whole code
-  function outputFunction (s, $) {
+    //~~~ OUTPUT FUNCTION ~~~//
+    //called when user clicks upload
+    //set $ = which section to output
+    //no $ = whole code
+    function outputFunction (s, $) {
 
-    //CHILD FUNCTIONS to be called later
-    function getNumberAfterChar(str, char) {    //used multiple places
+      //CHILD FUNCTIONS to be called later
+      function getNumberAfterChar(str, char) {
       const index = str.indexOf(char);
       if (index === -1) {
         return '';  //no code
@@ -75,7 +79,7 @@ function App() {
       }
       return n;
     }
-    function getFloatAfterChar(str, char) {     //will need this
+      function getFloatAfterChar(str, char) {
       const index = str.indexOf(char);
       if (index === -1) {
         return '';  //no code
@@ -87,7 +91,7 @@ function App() {
       }
       return n;
     }
-    function getCharAfterSubstr(str, substr) {
+      function getCharAfterSubstr(str, substr) {
       const index = str.indexOf(substr);
       if (index !== -1 && index + substr.length < str.length) {
         return str.charAt(index + substr.length);
@@ -95,17 +99,17 @@ function App() {
         return ''; 
       }
     }
-    function getCharsUntilLetter(str) {         //for gathering expressions
+      function getCharsUntilLetter(str) {         //for gathering expressions
       let substr = '';
       for (let i = 0; i < str.length; i++) {
-        if (/[a-zA-Z]/.test(str[i])) {
+        if (/[a-zA-Z,]/.test(str[i])) {
           break;
         }
         substr += str[i];
       }
       return substr;
     }
-    function getVars(str) {   //initial scan whole text for $0
+      function getVars(str) {   //initial scan whole text for $0
       const index = str.indexOf("$0");
       if (index === -1) {
         return '';    //$0 not found
@@ -119,18 +123,18 @@ function App() {
       }
       return vars;
     }
-    function clean(line) {    //better to clean line by line instead of all at once
-      
+      function clean(line) {    //better to clean line by line instead of all at once
+
       //initial clean up
       line = line.replace(/\s/g, '');             //whitespace
       line = line.replace(/\([\s\S]*?\)/g, '');   //comments
       line = line.toUpperCase();                  //capitalize
-      
+
       //ignoring these
       if (line.includes("IF")) line = '';
       if (line.includes("WHILE")) line = '';
       if (line.includes("M350")) line = '';
-      
+
       //handle trig
       line = line.replaceAll("ARCSIN", "%4");
       line = line.replaceAll("ARCCOS", "%5");
@@ -150,18 +154,18 @@ function App() {
       while (line.includes('#')) {
         let varNum = getNumberAfterChar(line, '#');
         let varText = '#' + varNum.toString();
-        
+
         //if it's a declaration
         if (getCharAfterSubstr(line, varText) == '=') {
           let postEq = line.substr(line.indexOf('=') + 1);
-          
+
           //handle variables on right side of equals sign
           while (postEq.includes('#')) {
             let var2Num = getNumberAfterChar(postEq, '#');
             let var2Text = '#' + var2Num.toString();
             postEq = postEq.replace(var2Text, varArr[var2Num].toString());
           }
-          
+
           //assign new value to variable on left of equals sign
           postEq = postEq.replace('[', '(');
           postEq = postEq.replace(']', ')');
@@ -176,7 +180,7 @@ function App() {
 
       return line;
     }
-    function codeFilter(letter, num) {
+      function codeFilter(letter, num) {
       switch (letter) {
         case 'G':
           switch (num) {
@@ -237,10 +241,10 @@ function App() {
           return 'Z';    
       } 
     }
-    function getCoord (line, char) {
+      function getCoord (line, char) {
       if (line.includes(char)) {
         let expr = getCharsUntilLetter(line.substring(line.indexOf(char)+1));
-        expr = expr.replaceAll(',' , '');
+        //expr = expr.replaceAll(',' , '');
         expr = expr.replaceAll('[' , '(');
         expr = expr.replaceAll(']' , ')');
         expr = expr.replaceAll('%1', 'sin');
@@ -256,10 +260,10 @@ function App() {
       }
       else return 99999;
     }
-    function getCodes(line) {  //scan line, update codes, create array of findings
-      
+      function getCodes(line) {  //scan line, update codes, create array of findings
+
       var arr = [];
-      
+
       //coords
       if (line.includes('X')) currentX = getCoord(line, 'X');
       if (line.includes('Y')) currentY = getCoord(line, 'Y');
@@ -269,9 +273,12 @@ function App() {
       if (line.includes('W')) currentZ += getCoord(line, 'W');
 
       //T,N
-      if (line.includes('T')) activeT = getFloatAfterChar(line, 'T');
+      if (line.includes('T')) {
+        activeT = getFloatAfterChar(line, 'T');
+        seqNum++;
+      }
       if (line.includes('N')) activeN = getFloatAfterChar(line, 'N');
-      
+
       //I,J,K
       if (line.includes('I')) activeI = getFloatAfterChar(line, 'I');
       else activeI = 0;
@@ -315,25 +322,26 @@ function App() {
         }
         line = line.replace('G', '_');
       }
-      
+
       return arr;
     }
 
     //DECLARE GCODE VARIABLES AND MODAL STATES
     //set defaults here!!
-    
+
     var varArr = new Array(30000).fill(0);
     var activeT='', activeN='';
     var activeMA='', activeMB='', activeMC='', activeMD='';
-    var activeGA='', activeGB='', activeGC='', activeGD='', activeGE='', activeGF='', activeGG='', activeGH='', activeGI='', activeGJ='';
+    var activeGA='', activeGB='', activeGC=18, activeGD='', activeGE='', activeGF='', activeGG='', activeGH='', activeGI='', activeGJ='';
     var currentX=0, currentY=0, currentZ=0;
     var activeI=0, activeJ=0, activeK=0, activeR=0;
 
     //PREPARE OUTPUT
     //preliminary scan for end variables
     //initialize objects for each line
-    
-    var n = 0;
+
+    var lineNum = 0;
+    var seqNum = 0;
     var output = '';
     var endVars = getVars(s);   //scan $0
 
@@ -353,32 +361,33 @@ function App() {
     var a = s.split(/\r?\n/);   //split section by line
     var o = a.map(item => {     //make objects
       return {
-        name: item
+        rawText: item
       };
     });
 
     //GENERATE OUTPUT
     //assign properties to each line object (coordinates, modal codes, etc.)
     //construct output text strings
-    o.forEach(object => {     
-      
-      n++;            
-      object.id = n;                                //set line number
+    o.forEach(object => {
 
-      object.name = clean(object.name);             //clean line for scanning
+      lineNum++;
+      object.id = lineNum;                          //set line number
+
+      object.text = clean(object.rawText);          //clean line for scanning
 
       object.x1 = currentX;                         //set previous coords
       object.y1 = currentY;
       object.z1 = currentZ;
 
-      object.codeArray = getCodes(object.name);     //scan line
-      
+      object.codeArray = getCodes(object.text);     //scan line
+
       object.x2 = currentX;                         //set new coords
       object.y2 = currentY;
       object.z2 = currentZ;
 
-      object.tool = activeT;                        //set tool
-      object.op = activeN;
+      object.t = activeT;                           //set tool
+      object.n = activeN;
+      object.seq = seqNum;
 
       object.codeMA = activeMA;                     //set modal states
       object.codeMB = activeMB;
@@ -401,10 +410,10 @@ function App() {
       object.r = activeR;
 
       output += object.id.toString().padStart(4, '0') + ' '; 
-      output += object.name + ' ';
+      output += object.rawText + ' ';
       output += '\n';
     });
-    
+
     //update line objects state only after reading all lines
     switch ($) {
       case 1: //$1
@@ -423,21 +432,41 @@ function App() {
     return output;
   }
 
-  //~~~ DRAWING FUNCTION ~~~//
-  //called when user interacts with output text
-  const drawFunction = ($) => {
-    
+    //~~~ DRAWING FUNCTION ~~~//
+    //called when user interacts with output text
+    const drawFunction = ($) => {
+
     let canvas, context;
     let current = {};
     let coords = {};
 
-    //draw background
-    const drawGrid = (canvas, context, spacing) => {
+      //color selector
+      const colorSelect = (n) => {
+      let n2 = (n % 6);
+      switch (n2) {
+        case 1:
+          return 'red';
+        case 2: 
+          return 'orange';
+        case 3:
+          return 'yellow';
+        case 4:
+          return 'green';
+        case 5: 
+          return 'blue';
+        case 0:
+          return 'purple';
+        default:
+          return '';
+      }
+    }
+      //draw background
+      const drawGrid = (canvas, context, spacing) => {
       context.clearRect(0,0,canvas.width, canvas.height);
       context.strokeStyle = 'lightgray';
-      
+
       context.lineWidth = 0.2;
-      
+
       for (let x = canvas.width / 2; x <= canvas.width; x += spacing) {
       context.beginPath();
       context.moveTo(x, 0);
@@ -462,7 +491,7 @@ function App() {
       context.lineTo(canvas.width, y);
       context.stroke();
       }
-      
+
       context.lineWidth = 0.5;
 
       for (let x = canvas.width / 2; x <= canvas.width; x += spacing*10) {
@@ -489,12 +518,9 @@ function App() {
       context.lineTo(canvas.width, y);
       context.stroke();
       }
-
-      
-
     }
-    //draw axes label in bottom left
-    const drawGnomon = (canvas, context, view) => {
+      //draw axes label in bottom left
+      const drawGnomon = (canvas, context, view) => {
       switch (view) {
         case 1:
           context.beginPath();
@@ -564,22 +590,22 @@ function App() {
       context.lineTo(x, canvas.height);
       context.stroke();
     }
-    //take start and end positions from line, calculate canvas coords
-    const setCoords = (lineObj, view, canvas, scale) => {
+      //take start and end positions from line, calculate canvas coords
+      const setCoords = (lineObj, view, canvas, scale) => {
       var newCoords = {};
 
       switch (view) {
-        
+
         case 1:   // ZX VIEW
           newCoords.x1 = (canvas.width / 2) + (/**/lineObj.z1/**/ * scale);
           newCoords.x2 = (canvas.width / 2) + (/**/lineObj.z2/**/ * scale);
-          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.x1/**/ * scale);
-          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.x2/**/ * scale);
-          
+          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.x1/**/ * scale / 2);
+          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.x2/**/ * scale / 2);
+
           //will arc be seen?
           if (lineObj.codeGC == 18) {
             newCoords.isArc = true;
-            
+
             //find arc center from ijk
             if (lineObj.i != 0 || lineObj.j != 0 || lineObj.k != 0) {
               newCoords.centerX = newCoords.x1 + (/**/lineObj.k/**/* scale);
@@ -588,13 +614,14 @@ function App() {
             //find arc center from r
             //trickier, see below
             else if (lineObj.r != 0) {
-              
+
               //1. start by finding edge lengths of triangle to center
               let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
               let h = H / 2;
               let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
               if (lineObj.codeGA == 3) L = -L;            //make g2 g3 opposite
               if (newCoords.y2 > newCoords.y1) L = -L;    //choose same solution consistently
+              if (lineObj.r < 0) L = -L;                  //handle -r
 
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
@@ -616,12 +643,12 @@ function App() {
           //arc won't be seen
           else newCoords.isArc = false;
           break;
-        
+
         case 2: // ZY VIEW
           newCoords.x1 = (canvas.width / 2) + (/**/lineObj.z1/**/ * scale);
           newCoords.x2 = (canvas.width / 2) + (/**/lineObj.z2/**/ * scale);
-          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.y1/**/ * scale);
-          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.y2/**/ * scale);
+          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.y1/**/ * scale / 2);
+          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.y2/**/ * scale / 2);
           //will arc be seen?
           if (lineObj.codeGC == 19) {
             newCoords.isArc = true;
@@ -633,13 +660,14 @@ function App() {
             //find arc center from r
             //trickier, see below
             else if (lineObj.r != 0) {
-              
+
               //1. start by finding edge lengths of triangle to center
               let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
               let h = H / 2;
               let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
               if (lineObj.codeGA == 3) L = -L;            //make g2 g3 opposite
               if (newCoords.y2 > newCoords.y1) L = -L;    //choose same solution consistently
+              if (lineObj.r < 0) L = -L;                  //handle -r
 
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
@@ -663,10 +691,10 @@ function App() {
           break;
 
         case 3:  // XY VIEW
-          newCoords.x1 = (canvas.width / 2) + (/**/lineObj.x1/**/ * scale);
-          newCoords.x2 = (canvas.width / 2) + (/**/lineObj.x2/**/ * scale);
-          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.y1/**/ * scale);
-          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.y2/**/ * scale);
+          newCoords.x1 = (canvas.width / 2) + (/**/lineObj.x1/**/ * scale / 2);
+          newCoords.x2 = (canvas.width / 2) + (/**/lineObj.x2/**/ * scale / 2);
+          newCoords.y1 = (canvas.height / 2) - (/**/lineObj.y1/**/ * scale / 2);
+          newCoords.y2 = (canvas.height / 2) - (/**/lineObj.y2/**/ * scale / 2);
           //will arc be seen?
           if (lineObj.codeGC == 17) {
             newCoords.isArc = true;
@@ -678,13 +706,14 @@ function App() {
             //find arc center from r
             //trickier, see below
             else if (lineObj.r != 0) {
-              
+
               //1. start by finding edge lengths of triangle to center
               let H = Math.sqrt((newCoords.x2 - newCoords.x1)*(newCoords.x2 - newCoords.x1) + (newCoords.y2 - newCoords.y1)*(newCoords.y2 - newCoords.y1));
               let h = H / 2;
               let L = Math.sqrt(((lineObj.r*scale)*(lineObj.r*scale)) - (h*h));
               if (lineObj.codeGA == 3) L = -L;            //make g2 g3 opposite
               if (newCoords.y2 > newCoords.y1) L = -L;    //choose same solution consistently
+              if (lineObj.r < 0) L = -L;                  //handle -r
 
               newCoords.midX = newCoords.x1 + ((newCoords.x2 - newCoords.x1)/2);
               newCoords.midY = newCoords.y1 + ((newCoords.y2 - newCoords.y1)/2);
@@ -706,36 +735,36 @@ function App() {
           //arc won't be seen
           else newCoords.isArc = false;
           break;
-          
+
         default:
           break;
       }
       return newCoords;
     }
-    //draw black lines for G0 moves
-    const drawG0 = (context, coords) => {
+      //draw black lines for G0 moves
+      const drawG0 = (context, coords) => {
       context.beginPath();
       context.lineWidth = 1;
       context.strokeStyle = 'black';
       context.moveTo(coords.x1, coords.y1);
       context.lineTo(coords.x2, coords.y2);
-      context.stroke();
+      //context.stroke();
     }
-    //draw red lines for G1 moves
-    const drawG1 = (context, coords) => {
+      //draw red lines for G1 moves
+      const drawG1 = (context, coords, n) => {
       context.beginPath();
       context.lineWidth = 1;
-      context.strokeStyle = 'red';
+      context.strokeStyle = colorSelect(n);
       context.moveTo(coords.x1, coords.y1);
       context.lineTo(coords.x2, coords.y2);
       context.stroke();
     }
-    //draw yellow lines for G2 moves
-    const drawG2 = (context, coords) => {
+      //draw yellow lines for G2 moves
+      const drawG2 = (context, coords, n) => {
       if (coords.isArc == false) {
         context.beginPath();
         context.lineWidth = 1;
-        context.strokeStyle = 'yellow';
+        context.strokeStyle = colorSelect(n);
         context.moveTo(coords.x1, coords.y1);
         context.lineTo(coords.x2, coords.y2);
         context.stroke();
@@ -756,16 +785,16 @@ function App() {
       */
       context.beginPath();  //draw arc
       context.lineWidth = 1;
-      context.strokeStyle = 'yellow';
+      context.strokeStyle = colorSelect(n);
       context.arc(coords.centerX, coords.centerY, radius, startAngle, endAngle, false);
       context.stroke();
     }
-    //draw yellow lines for G3 moves
-    const drawG3 = (context, coords) => {
+      //draw yellow lines for G3 moves
+      const drawG3 = (context, coords, n) => {
       if (coords.isArc == false) {
         context.beginPath();
         context.lineWidth = 1;
-        context.strokeStyle = 'yellow';
+        context.strokeStyle = colorSelect(n);
         context.moveTo(coords.x1, coords.y1);
         context.lineTo(coords.x2, coords.y2);
         context.stroke();
@@ -786,49 +815,47 @@ function App() {
       */
       context.beginPath();
       context.lineWidth = 1;
-      context.strokeStyle = 'yellow';
+      context.strokeStyle = colorSelect(n);
       context.arc(coords.centerX, coords.centerY, radius, startAngle, endAngle, false);
       context.stroke();
-      
     }
-    //draw crosshairs
-    const drawCrosshair = (context, coords) => {
+      //draw crosshairs
+      const drawCrosshair = (context, coords) => {
       context.beginPath();
       context.arc(coords.x2, coords.y2, 5, 0, 2 * Math.PI);
       context.strokeStyle = 'white';
       context.lineWidth = 1;
       context.stroke();
     }
-    
-    //draw output in respective window
-    switch($) {
+      //draw output in respective window
+      switch($) {
       case 1: //$1
 
         canvas = canvasRef1.current;
         context = canvas.getContext('2d');
         canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
         canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
-        
+
         drawGrid(canvas, context, scale1/10);
         drawGnomon(canvas, context, currentView1);
-        
+
         for (let n = currentLine1; n > 0; n--) {
           current = lineItems1[currentLine1-n];
           coords = setCoords(current, currentView1, canvas, scale1);
-          
+
           //which type of line is it
           switch (current.codeGA) {
           case 0:
-            drawG0(context, coords);
+            drawG0(context, coords, current.seq);
             break;
           case 1:
-            drawG1(context, coords);
+            drawG1(context, coords, current.seq);
             break;
           case 2:
-            drawG2(context, coords);
+            drawG2(context, coords, current.seq);
             break;
           case 3:
-            drawG3(context, coords);
+            drawG3(context, coords, current.seq);
             break;
           default:  //oddball codeGA
             break;  //not drawing line
@@ -844,7 +871,7 @@ function App() {
         context = canvas.getContext('2d');
         canvas.setAttribute('width', window.getComputedStyle(canvas, null).getPropertyValue("width"));
         canvas.setAttribute('height', window.getComputedStyle(canvas, null).getPropertyValue("height"));
-      
+
         drawGrid(canvas, context, scale2/10);
         drawGnomon(canvas, context, currentView2);
 
@@ -855,16 +882,16 @@ function App() {
           //which type of line is it
           switch (current.codeGA) {
           case 0:
-            drawG0(context, coords);
+            drawG0(context, coords, current.seq);
             break;
           case 1:
-            drawG1(context, coords);
+            drawG1(context, coords, current.seq);
             break;
           case 2:
-            drawG2(context, coords);
+            drawG2(context, coords, current.seq);
             break;
           case 3:
-            drawG3(context, coords);
+            drawG3(context, coords, current.seq);
             break;
           default:  //oddball codeGA
             break;  //not drawing line
@@ -872,30 +899,30 @@ function App() {
         }
 
         drawCrosshair(context, coords)
-        
+
         break;
       default:  //draw function called with no $
         canvas = canvasRef1.current;
       break;
     }
-  };
+  }
 
   //~~~ EVENT HANDLING ~~~//
   //input changes, upload clicks, mouse and button interactions with output windows
 
-  const handleInputInteraction = (event) => {
+    const handleInputInteraction = (event) => {
     setInputText(event.target.value);
   }
-  const handleUpload = () => {
+    const handleUpload = () => {
     setOutput1(outputFunction(inputText, 1));
     setOutput2(outputFunction(inputText, 2));
     setOutput3(outputFunction(inputText, 0));
   }
-  const handleOutputInteraction1 = (event) => {
+    const handleOutputInteraction1 = (event) => {
     setCurrentWindow(1);
     setCurrentLine1(event.target.value.substr(0, event.target.selectionStart).split("\n").length);
   }
-  const handleOutputInteraction2 = (event) => {
+    const handleOutputInteraction2 = (event) => {
     setCurrentWindow(2);
     setCurrentLine2(event.target.value.substr(0, event.target.selectionStart).split("\n").length);
   }
@@ -956,8 +983,8 @@ function App() {
                 </Typography>
                 
                 <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
-                  N{lineItems1[currentLine1-1].op.toString().padStart(4, ' ')}<br />
-                  T{lineItems1[currentLine1-1].tool.toString().padStart(4, ' ')}<br />
+                  N{lineItems1[currentLine1-1].n.toString().padStart(4, ' ')}<br />
+                  T{lineItems1[currentLine1-1].t.toString().padStart(4, ' ')}<br />
                   <br />
                 </Typography>
                 
@@ -1018,8 +1045,8 @@ function App() {
                 </Typography>
                 
                 <Typography variant='inherit' color='black' fontSize={14} textAlign='right'>
-                  N{lineItems2[currentLine2-1].op.toString().padStart(4, ' ')}<br />
-                  T{lineItems2[currentLine2-1].tool.toString().padStart(4, ' ')}<br />
+                  N{lineItems2[currentLine2-1].n.toString().padStart(4, ' ')}<br />
+                  T{lineItems2[currentLine2-1].t.toString().padStart(4, ' ')}<br />
                   <br />
                 </Typography>
                 
