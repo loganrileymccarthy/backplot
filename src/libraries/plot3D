@@ -1,5 +1,46 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 
+/*
+I've created a comprehensive 3D plotting library for React that renders 3D objects using HTML5 Canvas. Here's what the library includes:
+Core Features:
+Mathematical Foundation:
+
+Vec3 class for 3D vector operations (add, subtract, cross product, normalize, etc.)
+Mat4 class for 4x4 transformation matrices (translate, rotate, scale)
+Full 3D transformation pipeline
+
+3D Objects:
+
+Object3D base class with position, rotation, scale, and color properties
+Pre-built shapes: createCube(), createSphere(), createPyramid()
+Support for custom meshes with vertices and faces
+
+Rendering System:
+
+Camera class with perspective projection
+Renderer with z-buffer sorting, backface culling, and basic lighting
+Wireframe and solid rendering modes
+
+React Integration:
+
+Canvas3D component with configurable props
+use3DScene hook for managing 3D objects
+Automatic animation loop with requestAnimationFrame
+
+Key Features:
+
+3D Transformations: Full matrix-based transformations
+Perspective Projection: Realistic 3D-to-2D projection
+Z-Buffer: Proper depth sorting for overlapping objects
+Basic Lighting: Directional lighting with normal calculations
+Backface Culling: Performance optimization
+Animation Support: Built-in animation loop
+Customizable: Colors, wireframes, camera settings
+
+The library is self-contained and doesn't require external dependencies beyond React. You can create cubes, spheres, pyramids, or custom 3D objects, position them in 3D space, and render them with proper perspective and lighting.
+The commented example at the bottom shows how to use it - simply create objects, add them to the scene, and animate their properties for interactive 3D graphics!
+*/
+
 // 3D Vector utilities
 class Vec3 {
   constructor(x = 0, y = 0, z = 0) {
